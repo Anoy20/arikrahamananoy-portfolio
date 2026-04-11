@@ -1,64 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arik Rahaman Anoy</title>
-    <link rel="shortcut icon" href="images/arik cricle.png" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles/style.css">
+  <meta charset="UTF-8" />
+  <title>Video to PDF</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 32px;
+    }
+
+    input, button {
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #generateBtn {
+      background: #2563eb;
+      color: white;
+    }
+
+    #downloadBtn {
+      background: #16a34a;
+      color: white;
+      display: none;
+    }
+
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 15px;
+      color: #93c5fd;
+    }
+
+    video, canvas {
+      display: none;
+    }
+  </style>
 </head>
-<body class="open-sans-normal">
-    <header class="header secondary-bg">
-    <nav>
-        <h3 class="nav-logo">Ar<span style="color:#FD6E0A">i</span>k</h3>
-        <ul>
-        <li><a href="">Portfolio</a></li>
-        <li><a href="">Blog</a></li>
-        <li><button class="btn-primary">Hire Me</button></li>
-        </ul>
-    </nav>
-    <div class="banner">
-        <div class="banner-content">
-            <h4 class="banner-greeting dark-2">Hi! This is</h4>
-            <h1 class="banner-title">Arik Rahaman Anoy</h1>
-            <p class="banner-description">Shot what able cold new see hold.Friendly as an betrayed formerly he. Morning because as to society behaved moments.</p>
-        <button class="btn-primary">Download CV</button>
-        <button>Contact</button>
-        </div>
-        <img class="banner-profile-pic" src="images/arik.png" alt="arikrahamananoy_image">
-    </div>
-</header>
-<main>
-    <section class="about secondary-bg">
-    <h3 class="section-title">About Me</h3>
-    <p class="section-description">I, m a designer & developer with a passion for web design. I enjoy developing simple, clean and slick websites that provide real value to the end user. Thousands of clients have procured exceptional resulfs while working with me. Delivering work within time and budget which meets clients requirements in our mata.</p>
-    <div class="about-items">
-        <about-itema>
-            <p class="item-title">Name</p>
-            <p class="item-description">Arik Rahaman Anoy</p>
-        </about-itema>
-        <about-itema>
-            <p class="item-title">Email</p>
-            <p class="item-description">arik@example.com</p>
-        </about-itema>
-        <about-itema>
-            <p class="item-title">Date of Birth</p>
-            <p class="item-description">Sept. 15, 2007</p>
-        </about-itema>
-        <about-itema>
-            <p class="item-title">From</p>
-            <p class="item-description">Bangladesh</p>
-        </about-itema>
-    </div>
-</section>
-<!--What I do section-->
-<section class="skills">
-    <h3 class="section-title text-center">What I do</h3>
-    <p class="section-description text-center">I have more than 10 years experience building software for clients all over the world. Below is a quick overview of my main technical skill sets and technologies i use. Want to find out more about my experience? Check out my online resume and project portfolio.</p>
-</section>
-</main>
+<body>
+
+  <h2>Video → 1 Screenshot per Second → PDF</h2>
+
+  <input type="file" id="videoInput" accept="video/*"><br>
+
+  <button id="generateBtn" disabled>Generate PDF</button>
+  <button id="downloadBtn">Download PDF</button>
+
+  <div id="status"></div>
+
+  <video id="video" preload="metadata"></video>
+  <canvas id="canvas"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    const videoInput = document.getElementById("videoInput");
+    const generateBtn = document.getElementById("generateBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const status = document.getElementById("status");
+
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let pdfBlob = null;
+
+    videoInput.addEventListener("change", () => {
+      const file = videoInput.files[0];
+      if (!file) return;
+
+      generateBtn.disabled = true;
+      downloadBtn.style.display = "none";
+      status.textContent = "Loading video…";
+
+      video.src = URL.createObjectURL(file);
+      video.load();
+
+      video.onloadedmetadata = () => {
+        generateBtn.disabled = false;
+        status.textContent =
+          `Ready. Duration: ${Math.floor(video.duration)} seconds`;
+      };
+    });
+
+    generateBtn.addEventListener("click", async () => {
+      generateBtn.disabled = true;
+      status.textContent = "Processing frames…";
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const { jsPDF } = window.jspdf;
+
+      const pdf = new jsPDF({
+        orientation: canvas.width >= canvas.height ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height]
+      });
+
+      const duration = Math.floor(video.duration);
+
+      for (let t = 0; t <= duration; t++) {
+        await seek(video, t);
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const img = canvas.toDataURL("image/jpeg", 0.85);
+
+        if (t > 0) pdf.addPage();
+        pdf.addImage(img, "JPEG", 0, 0, canvas.width, canvas.height);
+
+        status.textContent = `Captured ${t} / ${duration}`;
+      }
+
+      // IMPORTANT: convert to blob
+      pdfBlob = pdf.output("blob");
+
+      downloadBtn.style.display = "inline-block";
+      status.textContent = "PDF ready. Click download.";
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (!pdfBlob) return;
+
+      const url = URL.createObjectURL(pdfBlob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "video-screenshots.pdf";
+
+      // MUST be in DOM for reliable download
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+    });
+
+    function seek(video, time) {
+      return new Promise(resolve => {
+        const handler = () => {
+          video.removeEventListener("seeked", handler);
+          resolve();
+        };
+        video.addEventListener("seeked", handler);
+        video.currentTime = time;
+      });
+    }
+  </script>
+
 </body>
 </html>
