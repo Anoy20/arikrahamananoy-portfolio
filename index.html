@@ -12,10 +12,6 @@
       padding: 32px;
     }
 
-    h2 {
-      margin-top: 30px;
-    }
-
     .tool {
       border: 1px solid #334155;
       border-radius: 8px;
@@ -24,27 +20,20 @@
     }
 
     input, button {
-      margin-top: 8px;
       padding: 8px 12px;
-      font-size: 14px;
+      margin-top: 8px;
     }
 
     button {
+      background: #2563eb;
+      color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      background: #2563eb;
-      color: white;
     }
 
     button:disabled {
       background: #475569;
-      cursor: not-allowed;
-    }
-
-    .download {
-      background: #16a34a;
-      display: none;
     }
 
     .status {
@@ -59,126 +48,94 @@
 </head>
 <body>
 
-  <!-- ================= TOOL 1 ================= -->
+  <!-- TOOL 2 UPDATED -->
   <div class="tool">
-    <h2>Tool 1: Video → Screenshot Every Second → PDF</h2>
+    <h2>Tool: Video → PNG Frames (ZIP Download)</h2>
 
-    <input type="file" id="pdfVideoInput" accept="video/*"><br>
-    <button id="generatePdfBtn" disabled>Generate PDF</button>
-    <button id="downloadPdfBtn" class="download">Download PDF</button>
+    <input type="file" id="zipVideoInput" accept="video/*"><br><br>
 
-    <div id="pdfStatus" class="status"></div>
+    <button id="zipBtn" disabled>Generate ZIP</button>
 
-    <video id="pdfVideo" preload="metadata"></video>
-    <canvas id="pdfCanvas"></canvas>
+    <div id="zipStatus" class="status"></div>
+
+    <video id="zipVideo" preload="metadata"></video>
+    <canvas id="zipCanvas"></canvas>
   </div>
 
-  <!-- ================= TOOL 2 ================= -->
-  <div class="tool">
-    <h2>Tool 2: Cut Video (Minutes & Seconds)</h2>
-
-    <input type="file" id="trimVideoInput" accept="video/*"><br><br>
-
-    <strong>Start Time</strong><br>
-    <input type="number" id="startMin" min="0" value="0"> min
-    <input type="number" id="startSec" min="0" max="59" value="0"> sec
-    <br><br>
-
-    <strong>End Time</strong><br>
-    <input type="number" id="endMin" min="0" value="0"> min
-    <input type="number" id="endSec" min="0" max="59" value="0"> sec
-    <br><br>
-
-    <button id="cutBtn" disabled>Cut & Download</button>
-
-    <div id="trimStatus" class="status"></div>
-
-    <video id="trimVideo"></video>
-  </div>
-
-  <!-- jsPDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- LIBRARIES -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <script>
-    /* =====================================================
-       TOOL 1 — VIDEO → PDF (1 FRAME PER SECOND)
-    ===================================================== */
-    const pdfVideoInput = document.getElementById("pdfVideoInput");
-    const generatePdfBtn = document.getElementById("generatePdfBtn");
-    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
-    const pdfStatus = document.getElementById("pdfStatus");
-    const pdfVideo = document.getElementById("pdfVideo");
-    const pdfCanvas = document.getElementById("pdfCanvas");
-    const pdfCtx = pdfCanvas.getContext("2d");
+    const videoInput = document.getElementById("zipVideoInput");
+    const zipBtn = document.getElementById("zipBtn");
+    const status = document.getElementById("zipStatus");
 
-    let pdfBlob = null;
+    const video = document.getElementById("zipVideo");
+    const canvas = document.getElementById("zipCanvas");
+    const ctx = canvas.getContext("2d");
 
-    pdfVideoInput.onchange = () => {
-      const file = pdfVideoInput.files[0];
+    let ready = false;
+
+    videoInput.onchange = () => {
+      const file = videoInput.files[0];
       if (!file) return;
 
-      generatePdfBtn.disabled = true;
-      downloadPdfBtn.style.display = "none";
-      pdfStatus.textContent = "Loading video…";
+      video.src = URL.createObjectURL(file);
+      video.load();
+      ready = false;
+      zipBtn.disabled = true;
+      status.textContent = "Loading video…";
 
-      pdfVideo.src = URL.createObjectURL(file);
-      pdfVideo.load();
-
-      pdfVideo.onloadedmetadata = () => {
-        generatePdfBtn.disabled = false;
-        pdfStatus.textContent =
-          `Video ready (${Math.floor(pdfVideo.duration)} seconds).`;
+      video.onloadedmetadata = () => {
+        ready = true;
+        zipBtn.disabled = false;
+        status.textContent = `Ready (${Math.floor(video.duration)} seconds)`;
       };
     };
 
-    generatePdfBtn.onclick = async () => {
-      generatePdfBtn.disabled = true;
-      pdfStatus.textContent = "Capturing frames…";
+    zipBtn.onclick = async () => {
+      if (!ready) return;
 
-      pdfCanvas.width = pdfVideo.videoWidth;
-      pdfCanvas.height = pdfVideo.videoHeight;
+      zipBtn.disabled = true;
+      status.textContent = "Creating ZIP…";
 
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: pdfCanvas.width >= pdfCanvas.height ? "landscape" : "portrait",
-        unit: "px",
-        format: [pdfCanvas.width, pdfCanvas.height]
-      });
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
 
-      const totalSeconds = Math.floor(pdfVideo.duration);
+      const zip = new JSZip();
+      const folder = zip.folder("frames");
 
-      for (let t = 0; t <= totalSeconds; t++) {
-        await seekTo(pdfVideo, t);
+      const duration = Math.floor(video.duration);
 
-        pdfCtx.drawImage(pdfVideo, 0, 0);
-        const img = pdfCanvas.toDataURL("image/jpeg", 0.85);
+      for (let t = 0; t <= duration; t++) {
+        await seek(video, t);
 
-        if (t > 0) pdf.addPage();
-        pdf.addImage(img, "JPEG", 0, 0);
+        ctx.drawImage(video, 0, 0);
 
-        pdfStatus.textContent = `Captured ${t} / ${totalSeconds}`;
+        // draw timestamp text
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.fillText(`Second: ${t}`, 20, 50);
+
+        const blob = await new Promise(resolve =>
+          canvas.toBlob(resolve, "image/png")
+        );
+
+        folder.file(`frame_${String(t).padStart(4, "0")}.png`, blob);
+
+        status.textContent = `Processed ${t}/${duration}`;
       }
 
-      pdfBlob = pdf.output("blob");
-      downloadPdfBtn.style.display = "inline-block";
-      pdfStatus.textContent = "PDF ready. Click Download.";
+      const content = await zip.generateAsync({ type: "blob" });
+
+      saveAs(content, "video-frames.zip");
+
+      status.textContent = "ZIP downloaded.";
+      zipBtn.disabled = false;
     };
 
-    downloadPdfBtn.onclick = () => {
-      if (!pdfBlob) return;
-
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "video-screenshots.pdf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      setTimeout(() => URL.revokeObjectURL(url), 500);
-    };
-
-    function seekTo(video, time) {
+    function seek(video, time) {
       return new Promise(resolve => {
         const handler = () => {
           video.removeEventListener("seeked", handler);
@@ -188,90 +145,6 @@
         video.currentTime = time;
       });
     }
-
-    /* =====================================================
-       TOOL 2 — CUT VIDEO (MINUTES & SECONDS)
-    ===================================================== */
-    const trimVideoInput = document.getElementById("trimVideoInput");
-    const trimVideo = document.getElementById("trimVideo");
-    const cutBtn = document.getElementById("cutBtn");
-    const trimStatus = document.getElementById("trimStatus");
-
-    const startMin = document.getElementById("startMin");
-    const startSec = document.getElementById("startSec");
-    const endMin = document.getElementById("endMin");
-    const endSec = document.getElementById("endSec");
-
-    let recorder;
-    let chunks = [];
-
-    trimVideoInput.onchange = () => {
-      const file = trimVideoInput.files[0];
-      if (!file) return;
-
-      trimVideo.src = URL.createObjectURL(file);
-      trimVideo.load();
-      cutBtn.disabled = true;
-      trimStatus.textContent = "Loading video…";
-
-      trimVideo.onloadedmetadata = () => {
-        const total = Math.floor(trimVideo.duration);
-        endMin.value = Math.floor(total / 60);
-        endSec.value = total % 60;
-
-        cutBtn.disabled = false;
-        trimStatus.textContent = "Video ready for cutting.";
-      };
-    };
-
-    cutBtn.onclick = async () => {
-      const start =
-        Number(startMin.value) * 60 + Number(startSec.value);
-      const end =
-        Number(endMin.value) * 60 + Number(endSec.value);
-
-      if (
-        isNaN(start) ||
-        isNaN(end) ||
-        start >= end ||
-        end > trimVideo.duration
-      ) {
-        alert("Invalid start or end time.");
-        return;
-      }
-
-      trimStatus.textContent = "Recording trimmed section…";
-
-      const stream = trimVideo.captureStream();
-      recorder = new MediaRecorder(stream);
-      chunks = [];
-
-      recorder.ondataavailable = e => chunks.push(e.data);
-
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "trimmed-video.webm";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        setTimeout(() => URL.revokeObjectURL(url), 500);
-        trimStatus.textContent = "Trimmed video downloaded.";
-      };
-
-      trimVideo.currentTime = start;
-      await trimVideo.play();
-      recorder.start();
-
-      setTimeout(() => {
-        recorder.stop();
-        trimVideo.pause();
-      }, (end - start) * 1000);
-    };
   </script>
 
 </body>
