@@ -3,477 +3,305 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Tools</title>
+<title>Media Tools</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #f8f7f4;
-    --surface: #ffffff;
-    --surface2: #f1efe8;
-    --border: rgba(0,0,0,0.12);
-    --border2: rgba(0,0,0,0.22);
-    --text: #1a1a18;
-    --text2: #5f5e5a;
-    --text3: #888780;
-    --accent: #534ab7;
-    --accent-bg: #eeedfe;
-    --accent-text: #3c3489;
-    --success: #1d9e75;
-    --success-bg: #e1f5ee;
-    --danger: #a32d2d;
-    --danger-bg: #fcebeb;
-    --radius: 10px;
-    --radius-lg: 14px;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1a1a18;
-      --surface: #2c2c2a;
-      --surface2: #3a3a37;
-      --border: rgba(255,255,255,0.12);
-      --border2: rgba(255,255,255,0.22);
-      --text: #f1efe8;
-      --text2: #b4b2a9;
-      --text3: #888780;
-      --accent: #afa9ec;
-      --accent-bg: #26215c;
-      --accent-text: #cecbf6;
-      --success: #5dcaa5;
-      --success-bg: #04342c;
-      --danger: #f09595;
-      --danger-bg: #501313;
-    }
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 2rem 1rem;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  .container { max-width: 880px; margin: 0 auto; }
-
-  header {
-    margin-bottom: 2.5rem;
-    text-align: center;
-  }
-  header h1 {
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-  header p { color: var(--text2); font-size: 14px; }
-
-  .tabs {
-    display: flex;
-    gap: 6px;
-    background: var(--surface2);
-    border-radius: var(--radius-lg);
-    padding: 5px;
-    margin-bottom: 2rem;
-    border: 0.5px solid var(--border);
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text2);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .tab-btn.active {
-    background: var(--surface);
-    color: var(--accent);
-    border: 0.5px solid var(--border);
-  }
-  .tab-btn:hover:not(.active) { background: var(--surface); color: var(--text); }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .card {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .upload-zone {
-    border: 1.5px dashed var(--border2);
-    border-radius: var(--radius-lg);
-    padding: 3rem 2rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--surface2);
-  }
-  .upload-zone:hover, .upload-zone.drag-over {
-    border-color: var(--accent);
-    background: var(--accent-bg);
-  }
-  .upload-icon {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background: var(--accent-bg);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 22px;
-  }
-  .upload-zone h3 { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
-  .upload-zone p { font-size: 13px; color: var(--text2); }
-
-  input[type=file] { display: none; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 18px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border2);
-    background: transparent;
-    color: var(--text);
-    font-size: 14px; font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn:hover { background: var(--surface2); }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary {
-    background: var(--accent-bg);
-    color: var(--accent-text);
-    border-color: var(--accent);
-  }
-  .btn-primary:hover { opacity: 0.85; background: var(--accent-bg); }
-  .btn-success {
-    background: var(--success-bg);
-    color: var(--success);
-    border-color: var(--success);
-  }
-  .btn-danger {
-    background: var(--danger-bg);
-    color: var(--danger);
-    border-color: var(--danger);
-  }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
-  .section-label {
-    font-size: 12px; font-weight: 500; color: var(--text3);
-    text-transform: uppercase; letter-spacing: 0.6px;
-    margin-bottom: 10px;
-  }
-
-  .info-row {
-    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem;
-  }
-  .info-chip {
-    font-size: 12px; padding: 4px 10px;
-    background: var(--surface2); border: 0.5px solid var(--border);
-    border-radius: 20px; color: var(--text2);
-  }
-  .info-chip strong { color: var(--text); font-weight: 500; }
-
-  progress-bar-wrap {
-    display: block; width: 100%;
-    height: 6px; background: var(--surface2);
-    border-radius: 4px; overflow: hidden; margin: 12px 0;
-  }
-  .progress-inner {
-    height: 100%; background: var(--accent);
-    border-radius: 4px; transition: width 0.1s;
-  }
-
-  .frames-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-    margin-top: 1rem;
-  }
-  .frame-thumb {
-    position: relative; border-radius: 8px; overflow: hidden;
-    border: 0.5px solid var(--border); cursor: pointer;
-    aspect-ratio: 16/9; background: var(--surface2);
-  }
-  .frame-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .frame-label {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 3px 6px; font-size: 10px; font-weight: 500;
-    background: rgba(0,0,0,0.55); color: #fff; text-align: center;
-  }
-  .frame-thumb:hover .frame-label { background: rgba(83,74,183,0.85); }
-
-  .actions-row {
-    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-    margin-top: 1.25rem;
-  }
-
-  .status-msg {
-    font-size: 13px; padding: 10px 14px; border-radius: 8px;
-    display: none; margin: 10px 0;
-  }
-  .status-msg.show { display: block; }
-  .status-msg.info { background: var(--accent-bg); color: var(--accent-text); }
-  .status-msg.success { background: var(--success-bg); color: var(--success); }
-  .status-msg.error { background: var(--danger-bg); color: var(--danger); }
-
-  video {
-    width: 100%; border-radius: 10px;
-    background: #000; display: block;
-    max-height: 400px; object-fit: contain;
-  }
-
-  .trim-controls { margin-top: 1.25rem; }
-
-  .time-range-wrap {
-    position: relative; margin: 1.5rem 0 1rem;
-  }
-  .range-track {
-    position: relative; height: 36px;
-    background: var(--surface2); border-radius: 6px;
-    border: 0.5px solid var(--border); overflow: hidden;
-  }
-  .range-fill {
-    position: absolute; top: 0; bottom: 0;
-    background: var(--accent-bg); border: 1.5px solid var(--accent);
-    border-radius: 4px; pointer-events: none;
-  }
-  .range-input {
-    position: absolute; width: 100%; top: 50%; transform: translateY(-50%);
-    -webkit-appearance: none; appearance: none;
-    height: 100%; background: transparent; cursor: pointer;
-    z-index: 2;
-  }
-  .range-input::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 16px; height: 36px;
-    background: var(--accent); border-radius: 4px;
-    cursor: ew-resize; border: none;
-  }
-  .range-input::-moz-range-thumb {
-    width: 16px; height: 36px;
-    background: var(--accent); border-radius: 4px;
-    cursor: ew-resize; border: none;
-  }
-
-  .time-inputs {
-    display: flex; gap: 12px; align-items: center; margin-top: 12px;
-  }
-  .time-field {
-    flex: 1;
-  }
-  .time-field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
-  .time-field input {
-    width: 100%; padding: 8px 12px; border-radius: 8px;
-    border: 0.5px solid var(--border2); background: var(--surface);
-    color: var(--text); font-size: 14px; font-family: monospace;
-  }
-  .time-field input:focus { outline: none; border-color: var(--accent); }
-
-  .duration-badge {
-    padding: 4px 12px; background: var(--accent-bg); color: var(--accent-text);
-    border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap;
-  }
-
-  .thumb-strip {
-    display: flex; gap: 2px; height: 40px; margin: 8px 0;
-    border-radius: 6px; overflow: hidden; background: var(--surface2);
-  }
-  .thumb-strip canvas { flex: 1; object-fit: cover; }
-
-  .trim-preview-wrap { margin-top: 1.25rem; }
-  .trim-preview-wrap h4 { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 8px; }
-
-  #ext-progress-wrap, #trim-progress-wrap { margin: 10px 0; }
-  .prog-bar {
-    height: 6px; background: var(--surface2); border-radius: 4px; overflow: hidden;
-  }
-  .prog-inner {
-    height: 100%; background: var(--accent); border-radius: 4px;
-    transition: width 0.08s; width: 0%;
-  }
-  .prog-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
-
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.65); z-index: 100;
-    align-items: center; justify-content: center; padding: 1rem;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface); border-radius: var(--radius-lg);
-    border: 0.5px solid var(--border); padding: 1.5rem;
-    max-width: 560px; width: 100%;
-    max-height: 80vh; overflow: auto;
-  }
-  .modal img { width: 100%; border-radius: 8px; margin-bottom: 12px; }
-  .modal-title { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1rem; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f8f7f4;--surface:#fff;--surface2:#f1efe8;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --accent:#534ab7;--accent-bg:#eeedfe;--accent-text:#3c3489;
+  --success:#1d9e75;--success-bg:#e1f5ee;
+  --danger:#a32d2d;--danger-bg:#fcebeb;
+  --amber:#ba7517;--amber-bg:#faeeda;
+  --r:10px;--rl:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--surface:#2c2c2a;--surface2:#3a3a37;
+  --border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);
+  --text:#f1efe8;--text2:#b4b2a9;--text3:#888780;
+  --accent:#afa9ec;--accent-bg:#26215c;--accent-text:#cecbf6;
+  --success:#5dcaa5;--success-bg:#04342c;
+  --danger:#f09595;--danger-bg:#501313;
+  --amber:#ef9f27;--amber-bg:#412402;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem;font-size:15px;line-height:1.6;}
+.wrap{max-width:900px;margin:0 auto;}
+h1{font-size:24px;font-weight:600;text-align:center;margin-bottom:5px;}
+.sub{text-align:center;color:var(--text2);font-size:13px;margin-bottom:2rem;}
+.tabs{display:flex;gap:5px;background:var(--surface2);border-radius:var(--rl);padding:5px;margin-bottom:1.75rem;border:0.5px solid var(--border);flex-wrap:wrap;}
+.tb{flex:1;min-width:100px;padding:9px 10px;border:none;border-radius:8px;background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.tb.on{background:var(--surface);color:var(--accent);border:0.5px solid var(--border);}
+.tb:hover:not(.on){background:var(--surface);color:var(--text);}
+.panel{display:none;}.panel.on{display:block;}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:1.5rem;margin-bottom:1.25rem;}
+.drop{border:1.5px dashed var(--border2);border-radius:var(--rl);padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-bg);}
+.dico{width:48px;height:48px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:22px;}
+.drop h3{font-size:15px;font-weight:500;margin-bottom:5px;}
+.drop p{font-size:13px;color:var(--text2);}
+input[type=file]{display:none;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);border:0.5px solid var(--border2);background:transparent;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover{background:var(--surface2);}.btn:active{transform:scale(.98);}
+.bp{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);}.bp:hover{opacity:.85;background:var(--accent-bg);}
+.bs{background:var(--success-bg);color:var(--success);border-color:var(--success);}
+.bd{background:var(--danger-bg);color:var(--danger);border-color:var(--danger);}
+.ba{background:var(--amber-bg);color:var(--amber);border-color:var(--amber);}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.lbl{font-size:12px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.chip{font-size:12px;padding:4px 10px;background:var(--surface2);border:0.5px solid var(--border);border-radius:20px;color:var(--text2);}
+.chip strong{color:var(--text);font-weight:500;}
+.arow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:1.25rem;}
+.msg{font-size:13px;padding:10px 14px;border-radius:8px;display:none;margin:10px 0;}
+.msg.on{display:block;}.msg.info{background:var(--accent-bg);color:var(--accent-text);}
+.msg.ok{background:var(--success-bg);color:var(--success);}
+.msg.err{background:var(--danger-bg);color:var(--danger);}
+.msg.warn{background:var(--amber-bg);color:var(--amber);}
+video{width:100%;border-radius:10px;background:#000;display:block;max-height:380px;object-fit:contain;}
+.pb{height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.pi{height:100%;background:var(--accent);border-radius:4px;transition:width .08s;width:0%;}
+.pl{font-size:12px;color:var(--text2);margin-top:5px;}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:1rem;}
+.fth{position:relative;border-radius:8px;overflow:hidden;border:0.5px solid var(--border);cursor:pointer;aspect-ratio:16/9;background:var(--surface2);}
+.fth img{width:100%;height:100%;object-fit:cover;display:block;}
+.ftl{position:absolute;bottom:0;left:0;right:0;padding:3px 6px;font-size:10px;font-weight:500;background:rgba(0,0,0,.55);color:#fff;text-align:center;}
+.fth:hover .ftl{background:rgba(83,74,183,.85);}
+.rtk{position:relative;height:36px;background:var(--surface2);border-radius:6px;border:0.5px solid var(--border);overflow:hidden;}
+.rfi{position:absolute;top:0;bottom:0;background:var(--accent-bg);border:1.5px solid var(--accent);border-radius:4px;pointer-events:none;}
+.tinp{display:flex;gap:12px;margin-top:12px;}
+.tf{flex:1;}.tf label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;}
+.tf input{width:100%;padding:8px 12px;border-radius:8px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;font-family:monospace;}
+.tf input:focus{outline:none;border-color:var(--accent);}
+.dbadge{padding:4px 12px;background:var(--accent-bg);color:var(--accent-text);border-radius:20px;font-size:12px;font-weight:500;}
+.tstrip{display:flex;gap:2px;height:40px;margin:8px 0;border-radius:6px;overflow:hidden;background:var(--surface2);}
+.tstrip canvas{flex:1;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center;padding:1rem;}
+.mo.on{display:flex;}
+.mbox{background:var(--surface);border-radius:var(--rl);border:0.5px solid var(--border);padding:1.5rem;max-width:560px;width:100%;max-height:85vh;overflow:auto;}
+.mbox img{width:100%;border-radius:8px;margin-bottom:12px;}
+.mtt{font-size:15px;font-weight:500;margin-bottom:12px;}
+.mac{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;}
+select{padding:8px 12px;border-radius:8px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;}
+select:focus{outline:none;border-color:var(--accent);}
+textarea{width:100%;padding:12px 14px;border-radius:10px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;line-height:1.7;resize:vertical;font-family:inherit;}
+textarea:focus{outline:none;border-color:var(--accent);}
+.tbox{background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:1rem 1.25rem;min-height:160px;max-height:400px;overflow-y:auto;font-size:14px;line-height:1.8;}
+.seg{margin-bottom:5px;padding:5px 8px;border-radius:6px;border-left:3px solid var(--accent);background:var(--surface);}
+.ts{font-size:11px;color:var(--accent-text);font-weight:500;margin-right:8px;font-family:monospace;}
+.imgpre img{width:100%;max-height:360px;object-fit:contain;border-radius:10px;border:0.5px solid var(--border);display:block;background:var(--surface2);margin-bottom:1rem;}
+.blv{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.blv-live{background:var(--danger-bg);color:var(--danger);}
+.blv-ok{background:var(--success-bg);color:var(--success);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.rdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--danger);margin-right:4px;animation:pulse 1s infinite;}
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>Video Tools</h1>
-    <p>Extract frames from any video, or trim it to the exact segment you need</p>
-  </header>
+<div class="wrap">
+  <h1>Media Tools</h1>
+  <p class="sub">Frame extractor &nbsp;·&nbsp; Video trimmer &nbsp;·&nbsp; Video transcript &nbsp;·&nbsp; Image to text — runs entirely in your browser</p>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('extractor')">Frame Extractor</button>
-    <button class="tab-btn" onclick="switchTab('trimmer')">Video Trimmer</button>
+    <button class="tb on" onclick="sw('ext')">🎬 Frame Extractor</button>
+    <button class="tb" onclick="sw('trim')">✂️ Video Trimmer</button>
+    <button class="tb" onclick="sw('trans')">🎙 Video Transcript</button>
+    <button class="tb" onclick="sw('ocr')">🔍 Image to Text</button>
   </div>
 
-  <!-- FRAME EXTRACTOR -->
-  <div id="tab-extractor" class="tab-panel active">
+  <!-- ═══ FRAME EXTRACTOR ═══ -->
+  <div id="p-ext" class="panel on">
     <div class="card">
-      <div class="upload-zone" id="ext-drop" onclick="document.getElementById('ext-file').click()">
-        <div class="upload-icon">🎬</div>
+      <div class="drop" id="d-ext" onclick="document.getElementById('f-ext').click()">
+        <div class="dico">🎬</div>
         <h3>Upload a video</h3>
-        <p>Click to browse or drag and drop<br>Supports MP4, WebM, MOV, AVI</p>
-        <input type="file" id="ext-file" accept="video/*">
+        <p>Click to browse or drag and drop · MP4, WebM, MOV, AVI</p>
+        <input type="file" id="f-ext" accept="video/*">
       </div>
     </div>
-
-    <div id="ext-info-card" class="card" style="display:none">
-      <div class="section-label">Video info</div>
-      <div class="info-row" id="ext-info-row"></div>
-
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-        <div>
-          <div class="section-label" style="margin-bottom:5px">Capture mode</div>
-          <select id="ext-mode" style="padding:8px 12px;border-radius:8px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;">
-            <option value="every1">Every 1 second</option>
-            <option value="every2">Every 2 seconds</option>
-            <option value="every5">Every 5 seconds</option>
-            <option value="every10">Every 10 seconds</option>
-            <option value="fps1">1 fps (all frames at 1/s)</option>
-          </select>
-        </div>
-        <div>
-          <div class="section-label" style="margin-bottom:5px">Format</div>
-          <select id="ext-format" style="padding:8px 12px;border-radius:8px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;">
-            <option value="image/png">PNG</option>
-            <option value="image/jpeg">JPEG</option>
-            <option value="image/webp">WebP</option>
-          </select>
-        </div>
-        <div>
-          <div class="section-label" style="margin-bottom:5px">Quality (JPEG/WebP)</div>
-          <input type="range" id="ext-quality" min="0.5" max="1" step="0.05" value="0.92"
-            style="width:100px;vertical-align:middle">
-          <span id="ext-q-val" style="font-size:13px;color:var(--text2);margin-left:6px">92%</span>
+    <div id="c-ext" class="card" style="display:none">
+      <div class="lbl">Video info</div>
+      <div class="chips" id="i-ext"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+        <div><div class="lbl" style="margin-bottom:5px">Capture rate</div>
+          <select id="ext-mode"><option value="1">Every 1 second</option><option value="2">Every 2 seconds</option><option value="5">Every 5 seconds</option><option value="10">Every 10 seconds</option></select></div>
+        <div><div class="lbl" style="margin-bottom:5px">Format</div>
+          <select id="ext-fmt"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;color:var(--text2)">Quality</span>
+          <input type="range" id="ext-q" min="0.5" max="1" step="0.05" value="0.92" style="width:90px">
+          <span id="ext-qv" style="font-size:13px;color:var(--text2);min-width:34px">92%</span>
         </div>
       </div>
-
-      <div class="status-msg" id="ext-status"></div>
-
-      <div id="ext-progress-wrap" style="display:none">
-        <div class="prog-bar"><div class="prog-inner" id="ext-prog-inner"></div></div>
-        <div class="prog-label" id="ext-prog-label">Extracting frames…</div>
-      </div>
-
-      <div class="actions-row">
-        <button class="btn btn-primary" id="ext-btn" onclick="startExtraction()">Extract frames</button>
-        <span id="ext-count-badge" style="font-size:13px;color:var(--text2)"></span>
+      <div class="msg" id="m-ext"></div>
+      <div id="pw-ext" style="display:none;margin:10px 0"><div class="pb"><div class="pi" id="pi-ext"></div></div><div class="pl" id="pl-ext"></div></div>
+      <div class="arow">
+        <button class="btn bp" id="btn-ext" onclick="doExtract()">Extract frames</button>
+        <span id="ec-ext" style="font-size:13px;color:var(--text2)"></span>
       </div>
     </div>
-
-    <div id="ext-frames-card" class="card" style="display:none">
+    <div id="r-ext" class="card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
-        <div class="section-label" style="margin:0">Extracted frames</div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-success" id="ext-dl-btn" onclick="downloadZip()">Download all as ZIP</button>
-        </div>
+        <div class="lbl" style="margin:0">Extracted frames</div>
+        <button class="btn bs" id="btn-zip" onclick="doZip()">Download all as ZIP</button>
       </div>
-      <div class="frames-grid" id="frames-grid"></div>
+      <div class="fgrid" id="fgrid"></div>
     </div>
   </div>
 
-  <!-- VIDEO TRIMMER -->
-  <div id="tab-trimmer" class="tab-panel">
+  <!-- ═══ VIDEO TRIMMER ═══ -->
+  <div id="p-trim" class="panel">
     <div class="card">
-      <div class="upload-zone" id="trim-drop" onclick="document.getElementById('trim-file').click()">
-        <div class="upload-icon">✂️</div>
-        <h3>Upload a video to trim</h3>
-        <p>Click to browse or drag and drop</p>
-        <input type="file" id="trim-file" accept="video/*">
+      <div class="drop" id="d-trim" onclick="document.getElementById('f-trim').click()">
+        <div class="dico">✂️</div><h3>Upload a video to trim</h3><p>Click to browse or drag and drop</p>
+        <input type="file" id="f-trim" accept="video/*">
       </div>
     </div>
-
-    <div id="trim-info-card" class="card" style="display:none">
-      <div class="section-label">Preview</div>
-      <video id="trim-video" controls></video>
-
-      <div class="trim-controls">
+    <div id="c-trim" class="card" style="display:none">
+      <div class="lbl">Preview</div>
+      <video id="v-trim" controls></video>
+      <div style="margin-top:1.25rem;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
-          <div class="section-label" style="margin:0">Trim range</div>
-          <span class="duration-badge" id="trim-dur-badge">Duration: 0s</span>
+          <div class="lbl" style="margin:0">Trim range</div>
+          <span class="dbadge" id="dur-badge">Duration: 0s</span>
         </div>
-
-        <div class="thumb-strip" id="thumb-strip"></div>
-
-        <div class="time-range-wrap">
-          <div class="range-track" id="range-track">
-            <div class="range-fill" id="range-fill"></div>
-          </div>
+        <div class="tstrip" id="tstrip"></div>
+        <div style="margin:1rem 0 0.5rem"><div class="rtk" id="rtk"><div class="rfi" id="rfi"></div></div></div>
+        <div class="tinp">
+          <div class="tf"><label>Start time</label><input type="text" id="ts" value="00:00:00" oninput="onTI('s')"></div>
+          <div class="tf"><label>End time</label><input type="text" id="te" value="00:00:10" oninput="onTI('e')"></div>
         </div>
-
-        <div class="time-inputs">
-          <div class="time-field">
-            <label>Start time</label>
-            <input type="text" id="trim-start" value="00:00:00" oninput="onTimeInput('start')">
-          </div>
-          <div class="time-field">
-            <label>End time</label>
-            <input type="text" id="trim-end" value="00:00:10" oninput="onTimeInput('end')">
-          </div>
-        </div>
-
-        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <button class="btn" onclick="previewTrim()">Preview segment</button>
-          <button class="btn" onclick="resetTrimRange()">Reset range</button>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" onclick="prevTrim()">Preview segment</button>
+          <button class="btn" onclick="resetTrim()">Reset range</button>
         </div>
       </div>
-
-      <div class="status-msg" id="trim-status" style="margin-top:1rem"></div>
-
-      <div id="trim-progress-wrap" style="display:none;margin-top:1rem">
-        <div class="prog-bar"><div class="prog-inner" id="trim-prog-inner"></div></div>
-        <div class="prog-label" id="trim-prog-label">Processing…</div>
-      </div>
-
-      <div class="trim-preview-wrap" id="trim-result-wrap" style="display:none">
-        <h4>Trimmed result preview</h4>
-        <video id="trim-result-video" controls></video>
-        <div class="actions-row" style="margin-top:1rem;">
-          <button class="btn btn-success" id="trim-dl-btn" onclick="downloadTrimmed()">Download trimmed video</button>
-          <span id="trim-size-badge" style="font-size:13px;color:var(--text2)"></span>
+      <div class="msg" id="m-trim" style="margin-top:1rem"></div>
+      <div id="pw-trim" style="display:none;margin-top:1rem"><div class="pb"><div class="pi" id="pi-trim"></div></div><div class="pl" id="pl-trim"></div></div>
+      <div id="r-trim" style="display:none;margin-top:1.25rem">
+        <div class="lbl">Trimmed result</div>
+        <video id="vr-trim" controls></video>
+        <div class="arow">
+          <button class="btn bs" onclick="dlTrim()">Download trimmed video</button>
+          <span id="sz-trim" style="font-size:13px;color:var(--text2)"></span>
         </div>
       </div>
+      <div class="arow" style="margin-top:1.25rem;"><button class="btn bp" id="btn-trim" onclick="doTrim()">Trim video</button></div>
+    </div>
+  </div>
 
-      <div class="actions-row" style="margin-top:1.25rem;">
-        <button class="btn btn-primary" id="trim-btn" onclick="startTrim()">Trim video</button>
+  <!-- ═══ VIDEO TRANSCRIPT ═══ -->
+  <div id="p-trans" class="panel">
+    <div class="card">
+      <div class="drop" id="d-trans" onclick="document.getElementById('f-trans').click()">
+        <div class="dico">🎙</div>
+        <h3>Upload a video to transcribe</h3>
+        <p>Audio transcribed locally via your browser's speech engine<br>Works best with clear speech · Chrome / Edge recommended</p>
+        <input type="file" id="f-trans" accept="video/*,audio/*">
+      </div>
+    </div>
+    <div id="c-trans" class="card" style="display:none">
+      <div class="lbl">File info</div>
+      <div class="chips" id="i-trans"></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+        <div><div class="lbl" style="margin-bottom:5px">Language</div>
+          <select id="tr-lang">
+            <option value="en-US">English (US)</option><option value="en-GB">English (UK)</option>
+            <option value="bn-BD">Bengali</option><option value="ar-SA">Arabic</option>
+            <option value="zh-CN">Chinese (Simplified)</option><option value="fr-FR">French</option>
+            <option value="de-DE">German</option><option value="hi-IN">Hindi</option>
+            <option value="id-ID">Indonesian</option><option value="it-IT">Italian</option>
+            <option value="ja-JP">Japanese</option><option value="ko-KR">Korean</option>
+            <option value="pt-BR">Portuguese (BR)</option><option value="ru-RU">Russian</option>
+            <option value="es-ES">Spanish</option><option value="tr-TR">Turkish</option>
+            <option value="ur-PK">Urdu</option>
+          </select></div>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);cursor:pointer;">
+          <input type="checkbox" id="tr-ts" checked style="width:16px;height:16px;"> Show timestamps</label>
+      </div>
+      <div class="msg" id="m-trans"></div>
+      <div id="audio-wrap" style="display:none;margin-bottom:1rem;">
+        <div class="lbl">Playback</div>
+        <audio id="tr-audio" controls style="width:100%;margin-top:6px;border-radius:8px;"></audio>
+      </div>
+      <div id="live-wrap" style="display:none;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div class="lbl" style="margin:0">Live transcript</div>
+          <span class="blv blv-live" id="bl-live" style="display:none"><span class="rdot"></span>Listening</span>
+          <span class="blv blv-ok" id="bl-done" style="display:none">✓ Done</span>
+        </div>
+        <div class="tbox" id="tr-out">Transcript will appear here…</div>
+      </div>
+      <div class="arow">
+        <button class="btn bp" id="btn-trans" onclick="doTrans()">Start transcription</button>
+        <button class="btn bd" id="btn-stop" onclick="stopTrans()" style="display:none">Stop</button>
+        <button class="btn bs" id="btn-trdl" onclick="dlTrans()" style="display:none">Download .txt</button>
+        <button class="btn" id="btn-trcp" onclick="cpTrans()" style="display:none">Copy text</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ IMAGE TO TEXT ═══ -->
+  <div id="p-ocr" class="panel">
+    <div class="card">
+      <div class="drop" id="d-ocr" onclick="document.getElementById('f-ocr').click()">
+        <div class="dico">🔍</div>
+        <h3>Upload an image</h3>
+        <p>Extracts text from photos, screenshots, scans &amp; documents<br>PNG · JPG · WebP · BMP · TIFF · GIF</p>
+        <input type="file" id="f-ocr" accept="image/*">
+      </div>
+    </div>
+    <div id="c-ocr" class="card" style="display:none">
+      <div class="imgpre"><div class="lbl">Image preview</div><img id="ocr-img" src="" alt="preview"></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+        <div><div class="lbl" style="margin-bottom:5px">OCR language</div>
+          <select id="ocr-lang">
+            <option value="eng">English</option><option value="ben">Bengali</option>
+            <option value="ara">Arabic</option><option value="chi_sim">Chinese (Simplified)</option>
+            <option value="chi_tra">Chinese (Traditional)</option><option value="fra">French</option>
+            <option value="deu">German</option><option value="hin">Hindi</option>
+            <option value="ind">Indonesian</option><option value="ita">Italian</option>
+            <option value="jpn">Japanese</option><option value="kor">Korean</option>
+            <option value="por">Portuguese</option><option value="rus">Russian</option>
+            <option value="spa">Spanish</option><option value="tur">Turkish</option>
+            <option value="urd">Urdu</option>
+          </select></div>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);cursor:pointer;">
+          <input type="checkbox" id="ocr-pres" style="width:16px;height:16px;"> Preserve whitespace layout</label>
+      </div>
+      <div class="msg" id="m-ocr"></div>
+      <div id="pw-ocr" style="display:none;margin:10px 0"><div class="pb"><div class="pi" id="pi-ocr"></div></div><div class="pl" id="pl-ocr">Initializing…</div></div>
+      <div id="r-ocr" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+          <div class="lbl" style="margin:0">Extracted text</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span id="ocr-conf" style="font-size:12px;color:var(--text2)"></span>
+            <span id="ocr-wc" style="font-size:12px;color:var(--text3)"></span>
+          </div>
+        </div>
+        <textarea id="ocr-out" rows="12"></textarea>
+        <div class="arow" style="margin-top:10px;">
+          <button class="btn bs" onclick="dlOCR()">Download .txt</button>
+          <button class="btn" onclick="cpOCR()">Copy text</button>
+          <span id="ocr-cpd" style="font-size:13px;color:var(--success);display:none">✓ Copied!</span>
+        </div>
+      </div>
+      <div class="arow" style="margin-top:1.25rem;">
+        <button class="btn bp" id="btn-ocr" onclick="doOCR()">Extract text</button>
+        <button class="btn" onclick="clearOCR()">Change image</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Frame preview modal -->
-<div class="modal-overlay" id="frame-modal" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-title" id="modal-title">Frame preview</div>
-    <img id="modal-img" src="" alt="Frame">
-    <div class="modal-actions">
-      <button class="btn" onclick="downloadSingleFrame()">Download frame</button>
-      <button class="btn" onclick="closeModal()">Close</button>
+<!-- modal -->
+<div class="mo" id="modal" onclick="closeMo(event)">
+  <div class="mbox">
+    <div class="mtt" id="mtt">Frame</div>
+    <img id="mimg" src="" alt="">
+    <div class="mac">
+      <button class="btn" onclick="dlFrame()">Download</button>
+      <button class="btn" onclick="closeMo()">Close</button>
     </div>
   </div>
 </div>
@@ -481,404 +309,248 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
-let extVideo = null;
-let extFrames = [];
-let trimVideoFile = null;
-let trimStartSec = 0;
-let trimEndSec = 0;
-let trimDuration = 0;
-let trimmedBlob = null;
-let currentModalFrame = null;
-let isDragging = null;
-
-function switchTab(id) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['extractor','trimmer'][i]===id));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-'+id));
-}
-
-function formatTime(s) {
-  s = Math.max(0, s);
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
-  return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':');
-}
-
-function parseTime(str) {
-  const parts = str.split(':').map(Number);
-  if (parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
-  if (parts.length===2) return parts[0]*60+parts[1];
-  return parseFloat(str)||0;
-}
-
-function fmtSize(b) {
-  if(b>1048576) return (b/1048576).toFixed(1)+' MB';
-  return (b/1024).toFixed(0)+' KB';
-}
-
-function showStatus(id, msg, type) {
-  const el = document.getElementById(id);
-  el.textContent = msg; el.className = 'status-msg show '+type;
-}
-
-function hideStatus(id) {
-  document.getElementById(id).className = 'status-msg';
-}
-
-// ---- DRAG & DROP SHARED ----
-function setupDrop(zoneId, inputId, cb) {
-  const zone = document.getElementById(zoneId);
-  zone.addEventListener('dragover', e=>{e.preventDefault();zone.classList.add('drag-over');});
-  zone.addEventListener('dragleave', ()=>zone.classList.remove('drag-over'));
-  zone.addEventListener('drop', e=>{
-    e.preventDefault(); zone.classList.remove('drag-over');
-    const f = e.dataTransfer.files[0];
-    if(f && f.type.startsWith('video/')) cb(f);
-  });
-  document.getElementById(inputId).addEventListener('change', e=>{
-    const f = e.target.files[0]; if(f) cb(f);
+/* helpers */
+let EV=null,EF=[],TV=null,TS=0,TE=0,TD=0,TB=null,TF=null,TR=[],TRun=false,OF=null,CurF=null;
+const $=id=>document.getElementById(id);
+const ft=s=>{s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sc=Math.floor(s%60);return[h,m,sc].map(v=>String(v).padStart(2,'0')).join(':');};
+const pt=str=>{const p=str.split(':').map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p.length===2?p[0]*60+p[1]:parseFloat(str)||0;};
+const fsz=b=>b>1048576?(b/1048576).toFixed(1)+' MB':(b/1024).toFixed(0)+' KB';
+function msg(id,txt,tp){const e=$(id);e.textContent=txt;e.className='msg on '+tp;}
+function hmsg(id){$(id).className='msg';}
+function sw(id){
+  ['ext','trim','trans','ocr'].forEach((k,i)=>{
+    document.querySelectorAll('.tb')[i].classList.toggle('on',k===id);
+    $('p-'+k).classList.toggle('on',k===id);
   });
 }
-
-// ---- FRAME EXTRACTOR ----
-setupDrop('ext-drop','ext-file', loadExtractorVideo);
-
-document.getElementById('ext-quality').addEventListener('input', function(){
-  document.getElementById('ext-q-val').textContent = Math.round(this.value*100)+'%';
-});
-
-function loadExtractorVideo(file) {
-  const url = URL.createObjectURL(file);
-  extVideo = document.createElement('video');
-  extVideo.src = url; extVideo.preload = 'metadata'; extVideo.muted = true;
-  extVideo.addEventListener('loadedmetadata', ()=>{
-    const dur = extVideo.duration;
-    const row = document.getElementById('ext-info-row');
-    row.innerHTML = `
-      <span class="info-chip"><strong>${file.name}</strong></span>
-      <span class="info-chip">Duration: <strong>${formatTime(dur)}</strong></span>
-      <span class="info-chip">Size: <strong>${fmtSize(file.size)}</strong></span>
-    `;
-    document.getElementById('ext-info-card').style.display='block';
-    document.getElementById('ext-frames-card').style.display='none';
-    document.getElementById('frames-grid').innerHTML='';
-    extFrames=[];
-    hideStatus('ext-status');
-  });
+function drop(zid,fid,cb){
+  const z=$(zid);
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over');});
+  z.addEventListener('dragleave',()=>z.classList.remove('over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');const f=e.dataTransfer.files[0];if(f)cb(f);});
+  $(fid).addEventListener('change',e=>{const f=e.target.files[0];if(f)cb(f);});
 }
+function seek(v,t){return new Promise(r=>{v.currentTime=t;const fn=()=>{v.removeEventListener('seeked',fn);r();};v.addEventListener('seeked',fn);});}
 
-async function startExtraction() {
-  if(!extVideo) return;
-  const mode = document.getElementById('ext-mode').value;
-  const fmt = document.getElementById('ext-format').value;
-  const quality = parseFloat(document.getElementById('ext-quality').value);
-  const dur = extVideo.duration;
-
-  let times = [];
-  if(mode==='every1') for(let t=0;t<=dur;t++) times.push(t);
-  else if(mode==='every2') for(let t=0;t<=dur;t+=2) times.push(t);
-  else if(mode==='every5') for(let t=0;t<=dur;t+=5) times.push(t);
-  else if(mode==='every10') for(let t=0;t<=dur;t+=10) times.push(t);
-  else if(mode==='fps1') for(let t=0;t<=dur;t++) times.push(t);
-
-  if(times.length>500){
-    showStatus('ext-status',`That would produce ${times.length} frames. Try a lower capture rate.`,'error');
-    return;
-  }
-
-  const btn = document.getElementById('ext-btn');
-  btn.disabled=true; btn.textContent='Extracting…';
-  extFrames=[]; document.getElementById('frames-grid').innerHTML='';
-  document.getElementById('ext-frames-card').style.display='none';
-
-  const pw = document.getElementById('ext-progress-wrap');
-  const pi = document.getElementById('ext-prog-inner');
-  const pl = document.getElementById('ext-prog-label');
-  pw.style.display='block'; pi.style.width='0%';
-
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  const ext = fmt==='image/png'?'png':fmt==='image/jpeg'?'jpg':'webp';
-
+/* ── EXTRACTOR ── */
+drop('d-ext','f-ext',loadExt);
+$('ext-q').oninput=function(){$('ext-qv').textContent=Math.round(this.value*100)+'%';};
+function loadExt(f){
+  const url=URL.createObjectURL(f);
+  EV=document.createElement('video');EV.src=url;EV.preload='metadata';EV.muted=true;
+  EV.onloadedmetadata=()=>{
+    $('i-ext').innerHTML=`<span class="chip"><strong>${f.name}</strong></span><span class="chip">Duration <strong>${ft(EV.duration)}</strong></span><span class="chip">Size <strong>${fsz(f.size)}</strong></span><span class="chip">${EV.videoWidth}×${EV.videoHeight}</span>`;
+    $('c-ext').style.display='block';$('r-ext').style.display='none';$('fgrid').innerHTML='';EF=[];hmsg('m-ext');
+  };
+}
+async function doExtract(){
+  if(!EV)return;
+  const step=parseInt($('ext-mode').value)||1;
+  const fmt=$('ext-fmt').value;
+  const q=parseFloat($('ext-q').value);
+  const dur=EV.duration;
+  const times=[];for(let t=0;t<=dur;t+=step)times.push(parseFloat(t.toFixed(3)));
+  if(times.length>600){msg('m-ext','That would produce '+times.length+' frames — try a lower rate.','err');return;}
+  const btn=$('btn-ext');btn.disabled=true;btn.textContent='Extracting…';
+  EF=[];$('fgrid').innerHTML='';$('r-ext').style.display='none';
+  $('pw-ext').style.display='block';$('pi-ext').style.width='0%';
+  const cv=document.createElement('canvas'),cx=cv.getContext('2d');
+  const ext=fmt==='image/png'?'png':fmt==='image/jpeg'?'jpg':'webp';
   for(let i=0;i<times.length;i++){
-    const t = times[i];
-    await seekTo(extVideo, t);
-    canvas.width = extVideo.videoWidth||1280;
-    canvas.height = extVideo.videoHeight||720;
-    ctx.drawImage(extVideo,0,0,canvas.width,canvas.height);
-    const dataUrl = canvas.toDataURL(fmt, quality);
-    const blob = await (await fetch(dataUrl)).blob();
-    extFrames.push({blob, dataUrl, name:`frame_${String(i+1).padStart(4,'0')}_${formatTime(t).replace(/:/g,'-')}.${ext}`, time:t});
-
-    pi.style.width = Math.round((i+1)/times.length*100)+'%';
-    pl.textContent = `Extracting frame ${i+1} of ${times.length} (${formatTime(t)})`;
-    renderThumb(extFrames[extFrames.length-1], i);
-    if(i%5===0) await new Promise(r=>setTimeout(r,0));
+    await seek(EV,times[i]);
+    cv.width=EV.videoWidth||1280;cv.height=EV.videoHeight||720;
+    cx.drawImage(EV,0,0,cv.width,cv.height);
+    const du=cv.toDataURL(fmt,q);
+    const bl=await(await fetch(du)).blob();
+    const fr={blob:bl,dataUrl:du,name:`frame_${String(i+1).padStart(4,'0')}_${ft(times[i]).replace(/:/g,'-')}.${ext}`,time:times[i]};
+    EF.push(fr);
+    $('pi-ext').style.width=Math.round((i+1)/times.length*100)+'%';
+    $('pl-ext').textContent=`Frame ${i+1}/${times.length} (${ft(times[i])})`;
+    const d=document.createElement('div');d.className='fth';
+    d.innerHTML=`<img src="${du}" loading="lazy"><div class="ftl">${ft(times[i])}</div>`;
+    d.onclick=(()=>{const _f=fr;return()=>openMo(_f);})();
+    $('fgrid').appendChild(d);
+    if(i%5===0)await new Promise(r=>setTimeout(r,0));
   }
-
-  pw.style.display='none';
-  btn.disabled=false; btn.textContent='Extract frames';
-  document.getElementById('ext-count-badge').textContent = `${extFrames.length} frames extracted`;
-  document.getElementById('ext-frames-card').style.display='block';
-  showStatus('ext-status',`✓ ${extFrames.length} frames extracted successfully`,'success');
+  $('pw-ext').style.display='none';btn.disabled=false;btn.textContent='Extract frames';
+  $('ec-ext').textContent=EF.length+' frames';$('r-ext').style.display='block';
+  msg('m-ext','✓ '+EF.length+' frames extracted','ok');
+}
+function openMo(f){CurF=f;$('mtt').textContent=f.name;$('mimg').src=f.dataUrl;$('modal').classList.add('on');}
+function closeMo(e){if(!e||e.target===$('modal'))$('modal').classList.remove('on');}
+function dlFrame(){if(CurF)saveAs(CurF.blob,CurF.name);}
+async function doZip(){
+  if(!EF.length)return;const btn=$('btn-zip');btn.disabled=true;
+  msg('m-ext','Zipping…','info');
+  const zip=new JSZip(),folder=zip.folder('frames');
+  EF.forEach(f=>folder.file(f.name,f.blob));
+  const bl=await zip.generateAsync({type:'blob',compression:'STORE'},m=>{btn.textContent='Zipping… '+Math.round(m.percent)+'%';});
+  saveAs(bl,'frames.zip');btn.disabled=false;btn.textContent='Download all as ZIP';
+  msg('m-ext','✓ ZIP ready ('+fsz(bl.size)+')','ok');
 }
 
-function seekTo(video, time) {
-  return new Promise(res=>{
-    video.currentTime=time;
-    const onSeeked=()=>{video.removeEventListener('seeked',onSeeked);res();};
-    video.addEventListener('seeked',onSeeked);
-  });
-}
-
-function renderThumb(frame, idx) {
-  const grid = document.getElementById('frames-grid');
-  const div = document.createElement('div');
-  div.className='frame-thumb'; div.title=frame.name;
-  div.innerHTML=`<img src="${frame.dataUrl}" loading="lazy"><div class="frame-label">${formatTime(frame.time)}</div>`;
-  div.onclick=()=>openModal(frame);
-  grid.appendChild(div);
-}
-
-function openModal(frame) {
-  currentModalFrame=frame;
-  document.getElementById('modal-title').textContent=frame.name;
-  document.getElementById('modal-img').src=frame.dataUrl;
-  document.getElementById('frame-modal').classList.add('open');
-}
-function closeModal(e) {
-  if(!e||e.target===document.getElementById('frame-modal'))
-    document.getElementById('frame-modal').classList.remove('open');
-}
-function downloadSingleFrame() {
-  if(!currentModalFrame) return;
-  saveAs(currentModalFrame.blob, currentModalFrame.name);
-}
-
-async function downloadZip() {
-  if(!extFrames.length) return;
-  const btn = document.getElementById('ext-dl-btn');
-  btn.disabled=true; btn.textContent='Creating ZIP…';
-  showStatus('ext-status','Zipping frames…','info');
-
-  const zip = new JSZip();
-  const folder = zip.folder('frames');
-  extFrames.forEach(f => folder.file(f.name, f.blob));
-  const blob = await zip.generateAsync({type:'blob', compression:'STORE'}, meta=>{
-    btn.textContent=`Zipping… ${Math.round(meta.percent)}%`;
-  });
-  saveAs(blob,'frames.zip');
-  btn.disabled=false; btn.textContent='Download all as ZIP';
-  showStatus('ext-status',`✓ ZIP downloaded (${fmtSize(blob.size)})`,'success');
-}
-
-// ---- VIDEO TRIMMER ----
-setupDrop('trim-drop','trim-file', loadTrimmerVideo);
-
-function loadTrimmerVideo(file) {
-  trimVideoFile=file;
-  const url = URL.createObjectURL(file);
-  const vid = document.getElementById('trim-video');
-  vid.src=url;
-  vid.addEventListener('loadedmetadata', ()=>{
-    trimDuration=vid.duration;
-    trimStartSec=0; trimEndSec=trimDuration;
-    document.getElementById('trim-info-card').style.display='block';
-    document.getElementById('trim-result-wrap').style.display='none';
-    hideStatus('trim-status');
-    updateTimeInputs();
-    updateRangeFill();
-    generateThumbStrip(vid);
-    document.getElementById('trim-dur-badge').textContent=`Duration: ${formatTime(trimDuration)}`;
+/* ── TRIMMER ── */
+drop('d-trim','f-trim',loadTrim);
+function loadTrim(f){
+  TV=f;const url=URL.createObjectURL(f);const v=$('v-trim');v.src=url;
+  v.addEventListener('loadedmetadata',()=>{
+    TD=v.duration;TS=0;TE=TD;
+    $('c-trim').style.display='block';$('r-trim').style.display='none';
+    hmsg('m-trim');updTI();updRF();genStrip(v);
+    $('dur-badge').textContent='Duration: '+ft(TD);
   },{once:true});
 }
-
-function generateThumbStrip(vid) {
-  const strip = document.getElementById('thumb-strip');
-  strip.innerHTML='';
-  const N=20;
-  const canvas = document.createElement('canvas');
-  canvas.width=80; canvas.height=45;
-  const ctx = canvas.getContext('2d');
-
-  async function drawThumbs(){
-    for(let i=0;i<N;i++){
-      const t=(i/(N-1))*trimDuration;
-      await seekTo(vid,t);
-      ctx.drawImage(vid,0,0,80,45);
-      const c=document.createElement('canvas');
-      c.width=80;c.height=45;
-      c.getContext('2d').drawImage(canvas,0,0);
-      c.style.flex='1';
-      strip.appendChild(c);
-    }
-  }
-  drawThumbs();
+function genStrip(v){
+  const s=$('tstrip');s.innerHTML='';const N=20;
+  const cv=document.createElement('canvas');cv.width=80;cv.height=45;const cx=cv.getContext('2d');
+  (async()=>{for(let i=0;i<N;i++){await seek(v,i/(N-1)*TD);cx.drawImage(v,0,0,80,45);const c=document.createElement('canvas');c.width=80;c.height=45;c.getContext('2d').drawImage(cv,0,0);c.style.flex='1';s.appendChild(c);}})();
 }
-
-function updateTimeInputs() {
-  document.getElementById('trim-start').value=formatTime(trimStartSec);
-  document.getElementById('trim-end').value=formatTime(trimEndSec);
-  document.getElementById('trim-dur-badge').textContent=`Selection: ${formatTime(trimEndSec-trimStartSec)} / Total: ${formatTime(trimDuration)}`;
+function updTI(){$('ts').value=ft(TS);$('te').value=ft(TE);$('dur-badge').textContent='Selection: '+ft(TE-TS)+' / Total: '+ft(TD);}
+function updRF(){const f=$('rfi');f.style.left=(TS/TD*100)+'%';f.style.width=((TE-TS)/TD*100)+'%';}
+function onTI(w){
+  let s=pt($('ts').value),e=pt($('te').value);
+  s=Math.max(0,Math.min(s,TD));e=Math.max(0,Math.min(e,TD));
+  if(w==='s'&&s>=e)s=Math.max(0,e-0.5);if(w==='e'&&e<=s)e=Math.min(TD,s+0.5);
+  TS=s;TE=e;updRF();$('dur-badge').textContent='Selection: '+ft(TE-TS)+' / Total: '+ft(TD);
 }
-
-function updateRangeFill() {
-  const fill=document.getElementById('range-fill');
-  const left=(trimStartSec/trimDuration)*100;
-  const right=(trimEndSec/trimDuration)*100;
-  fill.style.left=left+'%'; fill.style.width=(right-left)+'%';
-}
-
-function onTimeInput(which) {
-  const sVal=document.getElementById('trim-start').value;
-  const eVal=document.getElementById('trim-end').value;
-  let s=parseTime(sVal), e=parseTime(eVal);
-  s=Math.max(0,Math.min(s,trimDuration));
-  e=Math.max(0,Math.min(e,trimDuration));
-  if(which==='start'&&s>=e) s=Math.max(0,e-0.5);
-  if(which==='end'&&e<=s) e=Math.min(trimDuration,s+0.5);
-  trimStartSec=s; trimEndSec=e;
-  updateRangeFill();
-  document.getElementById('trim-dur-badge').textContent=`Selection: ${formatTime(trimEndSec-trimStartSec)} / Total: ${formatTime(trimDuration)}`;
-}
-
-function resetTrimRange() {
-  trimStartSec=0; trimEndSec=trimDuration;
-  updateTimeInputs(); updateRangeFill();
-}
-
-function previewTrim() {
-  const vid=document.getElementById('trim-video');
-  vid.currentTime=trimStartSec; vid.play();
-  const stopAt=trimEndSec;
-  const checker=setInterval(()=>{
-    if(vid.currentTime>=stopAt){vid.pause();clearInterval(checker);}
-  },100);
-}
-
-// Range drag on the bar
+function resetTrim(){TS=0;TE=TD;updTI();updRF();}
+function prevTrim(){const v=$('v-trim');v.currentTime=TS;v.play();const chk=setInterval(()=>{if(v.currentTime>=TE){v.pause();clearInterval(chk);}},100);}
 (function(){
-  const track = document.getElementById('range-track');
-  if(!track) return;
-  let dragging=null;
-  track.addEventListener('mousedown', e=>{
-    const rect=track.getBoundingClientRect();
-    const pct=(e.clientX-rect.left)/rect.width;
-    const s=trimStartSec/trimDuration, en=trimEndSec/trimDuration;
-    if(Math.abs(pct-s)<0.04) dragging='start';
-    else if(Math.abs(pct-en)<0.04) dragging='end';
-    else if(pct>s&&pct<en) dragging='both';
-    e._startPct=pct; e._startS=trimStartSec; e._startE=trimEndSec;
-  });
-  document.addEventListener('mousemove', e=>{
-    if(!dragging) return;
-    const rect=track.getBoundingClientRect();
-    const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-    if(dragging==='start'){
-      trimStartSec=Math.min(pct*trimDuration,trimEndSec-0.5);
-    } else if(dragging==='end'){
-      trimEndSec=Math.max(pct*trimDuration,trimStartSec+0.5);
-    }
-    trimStartSec=Math.max(0,trimStartSec);
-    trimEndSec=Math.min(trimDuration,trimEndSec);
-    updateTimeInputs(); updateRangeFill();
-  });
-  document.addEventListener('mouseup',()=>dragging=null);
-
-  track.addEventListener('touchstart', e=>{
-    const t=e.touches[0]; const rect=track.getBoundingClientRect();
-    const pct=(t.clientX-rect.left)/rect.width;
-    const s=trimStartSec/trimDuration, en=trimEndSec/trimDuration;
-    if(Math.abs(pct-s)<0.05) dragging='start';
-    else if(Math.abs(pct-en)<0.05) dragging='end';
-    else if(pct>s&&pct<en) dragging='both';
-  });
-  document.addEventListener('touchmove', e=>{
-    if(!dragging) return;
-    const t=e.touches[0]; const rect=track.getBoundingClientRect();
-    const pct=Math.max(0,Math.min(1,(t.clientX-rect.left)/rect.width));
-    if(dragging==='start') trimStartSec=Math.min(pct*trimDuration,trimEndSec-0.5);
-    else if(dragging==='end') trimEndSec=Math.max(pct*trimDuration,trimStartSec+0.5);
-    trimStartSec=Math.max(0,trimStartSec);
-    trimEndSec=Math.min(trimDuration,trimEndSec);
-    updateTimeInputs(); updateRangeFill();
-  });
-  document.addEventListener('touchend',()=>dragging=null);
+  const tk=$('rtk');if(!tk)return;let dr=null;
+  const pct=x=>{const r=tk.getBoundingClientRect();return Math.max(0,Math.min(1,(x-r.left)/r.width));};
+  tk.addEventListener('mousedown',e=>{const p=pct(e.clientX),s=TS/TD,en=TE/TD;if(Math.abs(p-s)<.05)dr='s';else if(Math.abs(p-en)<.05)dr='e';else if(p>s&&p<en)dr='m';});
+  document.addEventListener('mousemove',e=>{if(!dr)return;const p=pct(e.clientX);if(dr==='s')TS=Math.max(0,Math.min(p*TD,TE-.5));else if(dr==='e')TE=Math.min(TD,Math.max(p*TD,TS+.5));updTI();updRF();});
+  document.addEventListener('mouseup',()=>dr=null);
+  tk.addEventListener('touchstart',e=>{const p=pct(e.touches[0].clientX),s=TS/TD,en=TE/TD;if(Math.abs(p-s)<.06)dr='s';else if(Math.abs(p-en)<.06)dr='e';else if(p>s&&p<en)dr='m';});
+  document.addEventListener('touchmove',e=>{if(!dr)return;const p=pct(e.touches[0].clientX);if(dr==='s')TS=Math.max(0,Math.min(p*TD,TE-.5));else if(dr==='e')TE=Math.min(TD,Math.max(p*TD,TS+.5));updTI();updRF();});
+  document.addEventListener('touchend',()=>dr=null);
 })();
-
-async function startTrim() {
-  if(!trimVideoFile) return;
-  const dur=trimEndSec-trimStartSec;
-  if(dur<0.1){showStatus('trim-status','Select a longer range to trim.','error');return;}
-
-  const btn=document.getElementById('trim-btn');
-  btn.disabled=true; btn.textContent='Trimming…';
-  showStatus('trim-status','Trimming video using frame-by-frame re-encoding…','info');
-  document.getElementById('trim-result-wrap').style.display='none';
-
-  const pw=document.getElementById('trim-progress-wrap');
-  const pi=document.getElementById('trim-prog-inner');
-  const pl=document.getElementById('trim-prog-label');
-  pw.style.display='block'; pi.style.width='0%';
-
-  try {
-    const srcVid=document.createElement('video');
-    srcVid.src=URL.createObjectURL(trimVideoFile);
-    srcVid.muted=true; srcVid.preload='metadata';
-    await new Promise(r=>{srcVid.onloadedmetadata=r;});
-
-    const FPS=30;
-    const totalFrames=Math.ceil(dur*FPS);
-    const canvas=document.createElement('canvas');
-    canvas.width=srcVid.videoWidth||1280;
-    canvas.height=srcVid.videoHeight||720;
-    const ctx=canvas.getContext('2d');
-
-    const stream=canvas.captureStream(FPS);
-
-    let mimeType='video/webm;codecs=vp9';
-    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType='video/webm;codecs=vp8';
-    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType='video/webm';
-
-    const recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:8000000});
-    const chunks=[];
-    recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
-
-    const recordingDone=new Promise(res=>recorder.onstop=res);
-    recorder.start(100);
-
-    for(let i=0;i<totalFrames;i++){
-      const t=trimStartSec+(i/FPS);
-      if(t>trimEndSec) break;
-      await seekTo(srcVid,t);
-      ctx.drawImage(srcVid,0,0,canvas.width,canvas.height);
-      const pct=Math.round((i+1)/totalFrames*100);
-      pi.style.width=pct+'%';
-      pl.textContent=`Processing frame ${i+1}/${totalFrames} (${formatTime(t-trimStartSec)} / ${formatTime(dur)})`;
+async function doTrim(){
+  if(!TV)return;const dur=TE-TS;if(dur<0.1){msg('m-trim','Select a longer range.','err');return;}
+  const btn=$('btn-trim');btn.disabled=true;btn.textContent='Trimming…';
+  msg('m-trim','Re-encoding selected segment…','info');$('r-trim').style.display='none';
+  $('pw-trim').style.display='block';$('pi-trim').style.width='0%';
+  try{
+    const src=document.createElement('video');src.src=URL.createObjectURL(TV);src.muted=true;src.preload='metadata';
+    await new Promise(r=>{src.onloadedmetadata=r;});
+    const FPS=30,TF_=Math.ceil(dur*FPS);
+    const cv=document.createElement('canvas');cv.width=src.videoWidth||1280;cv.height=src.videoHeight||720;
+    const cx=cv.getContext('2d');const st=cv.captureStream(FPS);
+    let mime='video/webm;codecs=vp9';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm;codecs=vp8';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
+    const rec=new MediaRecorder(st,{mimeType:mime,videoBitsPerSecond:8000000});
+    const cks=[];rec.ondataavailable=e=>{if(e.data.size>0)cks.push(e.data);};
+    const dn=new Promise(r=>rec.onstop=r);rec.start(100);
+    for(let i=0;i<TF_;i++){
+      const t=TS+(i/FPS);if(t>TE)break;
+      await seek(src,t);cx.drawImage(src,0,0,cv.width,cv.height);
+      $('pi-trim').style.width=Math.round((i+1)/TF_*100)+'%';
+      $('pl-trim').textContent='Frame '+(i+1)+'/'+TF_+' ('+ft(t-TS)+' / '+ft(dur)+')';
       await new Promise(r=>setTimeout(r,1000/FPS));
     }
-    recorder.stop();
-    await recordingDone;
-
-    trimmedBlob=new Blob(chunks,{type:mimeType});
-    const blobUrl=URL.createObjectURL(trimmedBlob);
-
-    document.getElementById('trim-result-video').src=blobUrl;
-    document.getElementById('trim-result-wrap').style.display='block';
-    document.getElementById('trim-size-badge').textContent=`File size: ${fmtSize(trimmedBlob.size)}`;
-    showStatus('trim-status',`✓ Trimmed: ${formatTime(dur)} segment · ${fmtSize(trimmedBlob.size)}`,'success');
-  } catch(err) {
-    showStatus('trim-status','Error: '+err.message,'error');
-  }
-
-  pw.style.display='none';
-  btn.disabled=false; btn.textContent='Trim video';
+    rec.stop();await dn;
+    TB=new Blob(cks,{type:mime});
+    $('vr-trim').src=URL.createObjectURL(TB);$('r-trim').style.display='block';
+    $('sz-trim').textContent='Size: '+fsz(TB.size);
+    msg('m-trim','✓ Trimmed: '+ft(dur)+' · '+fsz(TB.size),'ok');
+  }catch(er){msg('m-trim','Error: '+er.message,'err');}
+  $('pw-trim').style.display='none';btn.disabled=false;btn.textContent='Trim video';
+}
+function dlTrim(){
+  if(!TB)return;
+  const ext=TB.type.includes('mp4')?'mp4':'webm';
+  const orig=TV?TV.name.replace(/\.[^.]+$/,''):'video';
+  saveAs(TB,orig+'_trimmed_'+ft(TS).replace(/:/g,'-')+'-'+ft(TE).replace(/:/g,'-')+'.'+ext);
 }
 
-function downloadTrimmed() {
-  if(!trimmedBlob) return;
-  const ext=trimmedBlob.type.includes('mp4')?'mp4':'webm';
-  const orig=trimVideoFile?trimVideoFile.name.replace(/\.[^.]+$/,''):'video';
-  saveAs(trimmedBlob,`${orig}_trimmed_${formatTime(trimStartSec).replace(/:/g,'-')}-${formatTime(trimEndSec).replace(/:/g,'-')}.${ext}`);
+/* ── TRANSCRIPT ── */
+drop('d-trans','f-trans',loadTrans);
+function loadTrans(f){
+  TF=f;TR=[];TRun=false;
+  $('i-trans').innerHTML=`<span class="chip"><strong>${f.name}</strong></span><span class="chip">Size <strong>${fsz(f.size)}</strong></span>`;
+  $('c-trans').style.display='block';$('live-wrap').style.display='none';$('audio-wrap').style.display='none';
+  hmsg('m-trans');['btn-stop','btn-trdl','btn-trcp'].forEach(id=>$(id).style.display='none');
+  $('btn-trans').style.display='inline-flex';$('bl-live').style.display='none';$('bl-done').style.display='none';
 }
+let SRec=null,tStart=0;
+function doTrans(){
+  if(!TF)return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){msg('m-trans','Web Speech API not supported. Please use Chrome or Edge.','err');return;}
+  const lang=$('tr-lang').value;const showTS=$('tr-ts').checked;
+  TR=[];TRun=true;tStart=Date.now();
+  $('tr-out').innerHTML='<span style="color:var(--text3)">Listening…</span>';
+  $('live-wrap').style.display='block';$('bl-live').style.display='inline-flex';$('bl-done').style.display='none';
+  $('btn-trans').style.display='none';$('btn-stop').style.display='inline-flex';
+  $('btn-trdl').style.display='none';$('btn-trcp').style.display='none';hmsg('m-trans');
+  const au=$('tr-audio');au.src=URL.createObjectURL(TF);$('audio-wrap').style.display='block';au.play().catch(()=>{});
+  SRec=new SR();SRec.lang=lang;SRec.continuous=true;SRec.interimResults=true;SRec.maxAlternatives=1;
+  let interim='';
+  SRec.onresult=e=>{
+    interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i];
+      if(r.isFinal){TR.push({t:(Date.now()-tStart)/1000,tx:r[0].transcript.trim(),c:r[0].confidence});interim='';}
+      else interim+=r[0].transcript;
+    }
+    renderTR(showTS,interim);
+  };
+  SRec.onerror=e=>{if(e.error!=='no-speech')msg('m-trans','Error: '+e.error,'err');};
+  SRec.onend=()=>{if(TRun)SRec.start();else finTR(showTS);};
+  SRec.start();
+  au.onended=()=>stopTrans();
+}
+function renderTR(showTS,interim){
+  const box=$('tr-out');
+  if(!TR.length&&!interim){box.innerHTML='<span style="color:var(--text3)">Listening…</span>';return;}
+  let h=TR.map(s=>`<div class="seg">${showTS?'<span class="ts">'+ft(s.t)+'</span>':''}<span>${s.tx}</span>${s.c?'<span style="font-size:10px;color:var(--text3);margin-left:6px">'+Math.round(s.c*100)+'%</span>':''}</div>`).join('');
+  if(interim)h+=`<div class="seg" style="opacity:.5;border-left-color:var(--text3)"><span>${interim}</span></div>`;
+  box.innerHTML=h;box.scrollTop=box.scrollHeight;
+}
+function stopTrans(){TRun=false;if(SRec){try{SRec.stop();}catch(e){}}$('tr-audio').pause();}
+function finTR(showTS){
+  renderTR(showTS||$('tr-ts').checked,'');
+  $('bl-live').style.display='none';$('bl-done').style.display='inline-flex';
+  $('btn-trans').style.display='inline-flex';$('btn-stop').style.display='none';
+  if(TR.length){$('btn-trdl').style.display='inline-flex';$('btn-trcp').style.display='inline-flex';msg('m-trans','✓ '+TR.length+' segments transcribed','ok');}
+  else msg('m-trans','No speech detected. Ensure the video has audible speech, or try a different language.','warn');
+}
+function getTRtxt(){const s=$('tr-ts').checked;return TR.map(r=>(s?'['+ft(r.t)+'] ':'')+r.tx).join('\n');}
+function dlTrans(){const t=getTRtxt();if(!t)return;saveAs(new Blob([t],{type:'text/plain'}),(TF?TF.name.replace(/\.[^.]+$/,''):'transcript')+'.txt');}
+function cpTrans(){navigator.clipboard.writeText(getTRtxt()).then(()=>{const b=$('btn-trcp');b.textContent='✓ Copied';setTimeout(()=>b.textContent='Copy text',2000);});}
+
+/* ── OCR ── */
+drop('d-ocr','f-ocr',loadOCR);
+function loadOCR(f){
+  OF=f;$('ocr-img').src=URL.createObjectURL(f);$('c-ocr').style.display='block';
+  $('r-ocr').style.display='none';hmsg('m-ocr');$('pw-ocr').style.display='none';$('ocr-out').value='';
+}
+function loadSc(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Script load failed: '+src));document.head.appendChild(s);});}
+async function doOCR(){
+  if(!OF)return;
+  const lang=$('ocr-lang').value;
+  const btn=$('btn-ocr');btn.disabled=true;btn.textContent='Extracting…';
+  $('r-ocr').style.display='none';$('pw-ocr').style.display='block';$('pi-ocr').style.width='0%';
+  msg('m-ocr','Loading OCR engine (first run downloads language data ~10 MB)…','info');
+  try{
+    if(typeof Tesseract==='undefined')await loadSc('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js');
+    const res=await Tesseract.recognize(OF,lang,{logger:m=>{
+      if(m.status==='loading tesseract core'||m.status==='initializing tesseract'){$('pl-ocr').textContent='Loading OCR engine…';$('pi-ocr').style.width='10%';}
+      else if(m.status==='loading language traineddata'){$('pl-ocr').textContent='Downloading language data…';$('pi-ocr').style.width='30%';}
+      else if(m.status==='initializing api'){$('pl-ocr').textContent='Initializing…';$('pi-ocr').style.width='50%';}
+      else if(m.status==='recognizing text'){const p=Math.round(50+m.progress*50);$('pi-ocr').style.width=p+'%';$('pl-ocr').textContent='Recognizing text… '+p+'%';}
+    }});
+    const preserve=$('ocr-pres').checked;
+    let text=preserve?res.data.text:res.data.text.replace(/\n{3,}/g,'\n\n').trim();
+    const conf=Math.round(res.data.confidence);
+    const wc=text.trim().split(/\s+/).filter(Boolean).length;
+    $('ocr-out').value=text;$('ocr-conf').textContent='Confidence: '+conf+'%';$('ocr-wc').textContent=wc+' words';
+    $('r-ocr').style.display='block';msg('m-ocr','✓ '+wc+' words extracted ('+conf+'% confidence)','ok');
+  }catch(er){msg('m-ocr','OCR error: '+er.message,'err');}
+  $('pw-ocr').style.display='none';btn.disabled=false;btn.textContent='Extract text';
+}
+function dlOCR(){const t=$('ocr-out').value;if(!t)return;saveAs(new Blob([t],{type:'text/plain'}),(OF?OF.name.replace(/\.[^.]+$/,''):'ocr_result')+'.txt');}
+function cpOCR(){navigator.clipboard.writeText($('ocr-out').value).then(()=>{const b=$('ocr-cpd');b.style.display='inline';setTimeout(()=>b.style.display='none',2000);});}
+function clearOCR(){OF=null;$('c-ocr').style.display='none';$('f-ocr').value='';}
 </script>
 </body>
 </html>
