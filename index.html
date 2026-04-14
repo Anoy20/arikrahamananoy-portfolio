@@ -1,151 +1,884 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Video Tools</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Tools</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
-      padding: 32px;
-    }
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f1efe8;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --text: #1a1a18;
+    --text2: #5f5e5a;
+    --text3: #888780;
+    --accent: #534ab7;
+    --accent-bg: #eeedfe;
+    --accent-text: #3c3489;
+    --success: #1d9e75;
+    --success-bg: #e1f5ee;
+    --danger: #a32d2d;
+    --danger-bg: #fcebeb;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
 
-    .tool {
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 20px;
-      margin-top: 20px;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #2c2c2a;
+      --surface2: #3a3a37;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+      --text: #f1efe8;
+      --text2: #b4b2a9;
+      --text3: #888780;
+      --accent: #afa9ec;
+      --accent-bg: #26215c;
+      --accent-text: #cecbf6;
+      --success: #5dcaa5;
+      --success-bg: #04342c;
+      --danger: #f09595;
+      --danger-bg: #501313;
     }
+  }
 
-    input, button {
-      padding: 8px 12px;
-      margin-top: 8px;
-    }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    font-size: 15px;
+    line-height: 1.6;
+  }
 
-    button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+  .container { max-width: 880px; margin: 0 auto; }
 
-    button:disabled {
-      background: #475569;
-    }
+  header {
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  header p { color: var(--text2); font-size: 14px; }
 
-    .status {
-      margin-top: 10px;
-      color: #93c5fd;
-    }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    background: var(--surface2);
+    border-radius: var(--radius-lg);
+    padding: 5px;
+    margin-bottom: 2rem;
+    border: 0.5px solid var(--border);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text2);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    border: 0.5px solid var(--border);
+  }
+  .tab-btn:hover:not(.active) { background: var(--surface); color: var(--text); }
 
-    video, canvas {
-      display: none;
-    }
-  </style>
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .upload-zone {
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .upload-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent-bg);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 22px;
+  }
+  .upload-zone h3 { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
+  .upload-zone p { font-size: 13px; color: var(--text2); }
+
+  input[type=file] { display: none; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { opacity: 0.85; background: var(--accent-bg); }
+  .btn-success {
+    background: var(--success-bg);
+    color: var(--success);
+    border-color: var(--success);
+  }
+  .btn-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  .section-label {
+    font-size: 12px; font-weight: 500; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.6px;
+    margin-bottom: 10px;
+  }
+
+  .info-row {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem;
+  }
+  .info-chip {
+    font-size: 12px; padding: 4px 10px;
+    background: var(--surface2); border: 0.5px solid var(--border);
+    border-radius: 20px; color: var(--text2);
+  }
+  .info-chip strong { color: var(--text); font-weight: 500; }
+
+  progress-bar-wrap {
+    display: block; width: 100%;
+    height: 6px; background: var(--surface2);
+    border-radius: 4px; overflow: hidden; margin: 12px 0;
+  }
+  .progress-inner {
+    height: 100%; background: var(--accent);
+    border-radius: 4px; transition: width 0.1s;
+  }
+
+  .frames-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 1rem;
+  }
+  .frame-thumb {
+    position: relative; border-radius: 8px; overflow: hidden;
+    border: 0.5px solid var(--border); cursor: pointer;
+    aspect-ratio: 16/9; background: var(--surface2);
+  }
+  .frame-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .frame-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 3px 6px; font-size: 10px; font-weight: 500;
+    background: rgba(0,0,0,0.55); color: #fff; text-align: center;
+  }
+  .frame-thumb:hover .frame-label { background: rgba(83,74,183,0.85); }
+
+  .actions-row {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    margin-top: 1.25rem;
+  }
+
+  .status-msg {
+    font-size: 13px; padding: 10px 14px; border-radius: 8px;
+    display: none; margin: 10px 0;
+  }
+  .status-msg.show { display: block; }
+  .status-msg.info { background: var(--accent-bg); color: var(--accent-text); }
+  .status-msg.success { background: var(--success-bg); color: var(--success); }
+  .status-msg.error { background: var(--danger-bg); color: var(--danger); }
+
+  video {
+    width: 100%; border-radius: 10px;
+    background: #000; display: block;
+    max-height: 400px; object-fit: contain;
+  }
+
+  .trim-controls { margin-top: 1.25rem; }
+
+  .time-range-wrap {
+    position: relative; margin: 1.5rem 0 1rem;
+  }
+  .range-track {
+    position: relative; height: 36px;
+    background: var(--surface2); border-radius: 6px;
+    border: 0.5px solid var(--border); overflow: hidden;
+  }
+  .range-fill {
+    position: absolute; top: 0; bottom: 0;
+    background: var(--accent-bg); border: 1.5px solid var(--accent);
+    border-radius: 4px; pointer-events: none;
+  }
+  .range-input {
+    position: absolute; width: 100%; top: 50%; transform: translateY(-50%);
+    -webkit-appearance: none; appearance: none;
+    height: 100%; background: transparent; cursor: pointer;
+    z-index: 2;
+  }
+  .range-input::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 36px;
+    background: var(--accent); border-radius: 4px;
+    cursor: ew-resize; border: none;
+  }
+  .range-input::-moz-range-thumb {
+    width: 16px; height: 36px;
+    background: var(--accent); border-radius: 4px;
+    cursor: ew-resize; border: none;
+  }
+
+  .time-inputs {
+    display: flex; gap: 12px; align-items: center; margin-top: 12px;
+  }
+  .time-field {
+    flex: 1;
+  }
+  .time-field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+  .time-field input {
+    width: 100%; padding: 8px 12px; border-radius: 8px;
+    border: 0.5px solid var(--border2); background: var(--surface);
+    color: var(--text); font-size: 14px; font-family: monospace;
+  }
+  .time-field input:focus { outline: none; border-color: var(--accent); }
+
+  .duration-badge {
+    padding: 4px 12px; background: var(--accent-bg); color: var(--accent-text);
+    border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+
+  .thumb-strip {
+    display: flex; gap: 2px; height: 40px; margin: 8px 0;
+    border-radius: 6px; overflow: hidden; background: var(--surface2);
+  }
+  .thumb-strip canvas { flex: 1; object-fit: cover; }
+
+  .trim-preview-wrap { margin-top: 1.25rem; }
+  .trim-preview-wrap h4 { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 8px; }
+
+  #ext-progress-wrap, #trim-progress-wrap { margin: 10px 0; }
+  .prog-bar {
+    height: 6px; background: var(--surface2); border-radius: 4px; overflow: hidden;
+  }
+  .prog-inner {
+    height: 100%; background: var(--accent); border-radius: 4px;
+    transition: width 0.08s; width: 0%;
+  }
+  .prog-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65); z-index: 100;
+    align-items: center; justify-content: center; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border); padding: 1.5rem;
+    max-width: 560px; width: 100%;
+    max-height: 80vh; overflow: auto;
+  }
+  .modal img { width: 100%; border-radius: 8px; margin-bottom: 12px; }
+  .modal-title { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1rem; }
+</style>
 </head>
 <body>
+<div class="container">
+  <header>
+    <h1>Video Tools</h1>
+    <p>Extract frames from any video, or trim it to the exact segment you need</p>
+  </header>
 
-  <!-- TOOL 2 UPDATED -->
-  <div class="tool">
-    <h2>Tool: Video → PNG Frames (ZIP Download)</h2>
-
-    <input type="file" id="zipVideoInput" accept="video/*"><br><br>
-
-    <button id="zipBtn" disabled>Generate ZIP</button>
-
-    <div id="zipStatus" class="status"></div>
-
-    <video id="zipVideo" preload="metadata"></video>
-    <canvas id="zipCanvas"></canvas>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('extractor')">Frame Extractor</button>
+    <button class="tab-btn" onclick="switchTab('trimmer')">Video Trimmer</button>
   </div>
 
-  <!-- LIBRARIES -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- FRAME EXTRACTOR -->
+  <div id="tab-extractor" class="tab-panel active">
+    <div class="card">
+      <div class="upload-zone" id="ext-drop" onclick="document.getElementById('ext-file').click()">
+        <div class="upload-icon">🎬</div>
+        <h3>Upload a video</h3>
+        <p>Click to browse or drag and drop<br>Supports MP4, WebM, MOV, AVI</p>
+        <input type="file" id="ext-file" accept="video/*">
+      </div>
+    </div>
 
-  <script>
-    const videoInput = document.getElementById("zipVideoInput");
-    const zipBtn = document.getElementById("zipBtn");
-    const status = document.getElementById("zipStatus");
+    <div id="ext-info-card" class="card" style="display:none">
+      <div class="section-label">Video info</div>
+      <div class="info-row" id="ext-info-row"></div>
 
-    const video = document.getElementById("zipVideo");
-    const canvas = document.getElementById("zipCanvas");
-    const ctx = canvas.getContext("2d");
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+        <div>
+          <div class="section-label" style="margin-bottom:5px">Capture mode</div>
+          <select id="ext-mode" style="padding:8px 12px;border-radius:8px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;">
+            <option value="every1">Every 1 second</option>
+            <option value="every2">Every 2 seconds</option>
+            <option value="every5">Every 5 seconds</option>
+            <option value="every10">Every 10 seconds</option>
+            <option value="fps1">1 fps (all frames at 1/s)</option>
+          </select>
+        </div>
+        <div>
+          <div class="section-label" style="margin-bottom:5px">Format</div>
+          <select id="ext-format" style="padding:8px 12px;border-radius:8px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;">
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPEG</option>
+            <option value="image/webp">WebP</option>
+          </select>
+        </div>
+        <div>
+          <div class="section-label" style="margin-bottom:5px">Quality (JPEG/WebP)</div>
+          <input type="range" id="ext-quality" min="0.5" max="1" step="0.05" value="0.92"
+            style="width:100px;vertical-align:middle">
+          <span id="ext-q-val" style="font-size:13px;color:var(--text2);margin-left:6px">92%</span>
+        </div>
+      </div>
 
-    let ready = false;
+      <div class="status-msg" id="ext-status"></div>
 
-    videoInput.onchange = () => {
-      const file = videoInput.files[0];
-      if (!file) return;
+      <div id="ext-progress-wrap" style="display:none">
+        <div class="prog-bar"><div class="prog-inner" id="ext-prog-inner"></div></div>
+        <div class="prog-label" id="ext-prog-label">Extracting frames…</div>
+      </div>
 
-      video.src = URL.createObjectURL(file);
-      video.load();
-      ready = false;
-      zipBtn.disabled = true;
-      status.textContent = "Loading video…";
+      <div class="actions-row">
+        <button class="btn btn-primary" id="ext-btn" onclick="startExtraction()">Extract frames</button>
+        <span id="ext-count-badge" style="font-size:13px;color:var(--text2)"></span>
+      </div>
+    </div>
 
-      video.onloadedmetadata = () => {
-        ready = true;
-        zipBtn.disabled = false;
-        status.textContent = `Ready (${Math.floor(video.duration)} seconds)`;
-      };
-    };
+    <div id="ext-frames-card" class="card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+        <div class="section-label" style="margin:0">Extracted frames</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-success" id="ext-dl-btn" onclick="downloadZip()">Download all as ZIP</button>
+        </div>
+      </div>
+      <div class="frames-grid" id="frames-grid"></div>
+    </div>
+  </div>
 
-    zipBtn.onclick = async () => {
-      if (!ready) return;
+  <!-- VIDEO TRIMMER -->
+  <div id="tab-trimmer" class="tab-panel">
+    <div class="card">
+      <div class="upload-zone" id="trim-drop" onclick="document.getElementById('trim-file').click()">
+        <div class="upload-icon">✂️</div>
+        <h3>Upload a video to trim</h3>
+        <p>Click to browse or drag and drop</p>
+        <input type="file" id="trim-file" accept="video/*">
+      </div>
+    </div>
 
-      zipBtn.disabled = true;
-      status.textContent = "Creating ZIP…";
+    <div id="trim-info-card" class="card" style="display:none">
+      <div class="section-label">Preview</div>
+      <video id="trim-video" controls></video>
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      <div class="trim-controls">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+          <div class="section-label" style="margin:0">Trim range</div>
+          <span class="duration-badge" id="trim-dur-badge">Duration: 0s</span>
+        </div>
 
-      const zip = new JSZip();
-      const folder = zip.folder("frames");
+        <div class="thumb-strip" id="thumb-strip"></div>
 
-      const duration = Math.floor(video.duration);
+        <div class="time-range-wrap">
+          <div class="range-track" id="range-track">
+            <div class="range-fill" id="range-fill"></div>
+          </div>
+        </div>
 
-      for (let t = 0; t <= duration; t++) {
-        await seek(video, t);
+        <div class="time-inputs">
+          <div class="time-field">
+            <label>Start time</label>
+            <input type="text" id="trim-start" value="00:00:00" oninput="onTimeInput('start')">
+          </div>
+          <div class="time-field">
+            <label>End time</label>
+            <input type="text" id="trim-end" value="00:00:10" oninput="onTimeInput('end')">
+          </div>
+        </div>
 
-        ctx.drawImage(video, 0, 0);
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn" onclick="previewTrim()">Preview segment</button>
+          <button class="btn" onclick="resetTrimRange()">Reset range</button>
+        </div>
+      </div>
 
-        // draw timestamp text
-        ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
-        ctx.fillText(`Second: ${t}`, 20, 50);
+      <div class="status-msg" id="trim-status" style="margin-top:1rem"></div>
 
-        const blob = await new Promise(resolve =>
-          canvas.toBlob(resolve, "image/png")
-        );
+      <div id="trim-progress-wrap" style="display:none;margin-top:1rem">
+        <div class="prog-bar"><div class="prog-inner" id="trim-prog-inner"></div></div>
+        <div class="prog-label" id="trim-prog-label">Processing…</div>
+      </div>
 
-        folder.file(`frame_${String(t).padStart(4, "0")}.png`, blob);
+      <div class="trim-preview-wrap" id="trim-result-wrap" style="display:none">
+        <h4>Trimmed result preview</h4>
+        <video id="trim-result-video" controls></video>
+        <div class="actions-row" style="margin-top:1rem;">
+          <button class="btn btn-success" id="trim-dl-btn" onclick="downloadTrimmed()">Download trimmed video</button>
+          <span id="trim-size-badge" style="font-size:13px;color:var(--text2)"></span>
+        </div>
+      </div>
 
-        status.textContent = `Processed ${t}/${duration}`;
-      }
+      <div class="actions-row" style="margin-top:1.25rem;">
+        <button class="btn btn-primary" id="trim-btn" onclick="startTrim()">Trim video</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-      const content = await zip.generateAsync({ type: "blob" });
+<!-- Frame preview modal -->
+<div class="modal-overlay" id="frame-modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Frame preview</div>
+    <img id="modal-img" src="" alt="Frame">
+    <div class="modal-actions">
+      <button class="btn" onclick="downloadSingleFrame()">Download frame</button>
+      <button class="btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
 
-      saveAs(content, "video-frames.zip");
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script>
+let extVideo = null;
+let extFrames = [];
+let trimVideoFile = null;
+let trimStartSec = 0;
+let trimEndSec = 0;
+let trimDuration = 0;
+let trimmedBlob = null;
+let currentModalFrame = null;
+let isDragging = null;
 
-      status.textContent = "ZIP downloaded.";
-      zipBtn.disabled = false;
-    };
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['extractor','trimmer'][i]===id));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-'+id));
+}
 
-    function seek(video, time) {
-      return new Promise(resolve => {
-        const handler = () => {
-          video.removeEventListener("seeked", handler);
-          resolve();
-        };
-        video.addEventListener("seeked", handler);
-        video.currentTime = time;
-      });
+function formatTime(s) {
+  s = Math.max(0, s);
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
+  return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':');
+}
+
+function parseTime(str) {
+  const parts = str.split(':').map(Number);
+  if (parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+  if (parts.length===2) return parts[0]*60+parts[1];
+  return parseFloat(str)||0;
+}
+
+function fmtSize(b) {
+  if(b>1048576) return (b/1048576).toFixed(1)+' MB';
+  return (b/1024).toFixed(0)+' KB';
+}
+
+function showStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = 'status-msg show '+type;
+}
+
+function hideStatus(id) {
+  document.getElementById(id).className = 'status-msg';
+}
+
+// ---- DRAG & DROP SHARED ----
+function setupDrop(zoneId, inputId, cb) {
+  const zone = document.getElementById(zoneId);
+  zone.addEventListener('dragover', e=>{e.preventDefault();zone.classList.add('drag-over');});
+  zone.addEventListener('dragleave', ()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e=>{
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if(f && f.type.startsWith('video/')) cb(f);
+  });
+  document.getElementById(inputId).addEventListener('change', e=>{
+    const f = e.target.files[0]; if(f) cb(f);
+  });
+}
+
+// ---- FRAME EXTRACTOR ----
+setupDrop('ext-drop','ext-file', loadExtractorVideo);
+
+document.getElementById('ext-quality').addEventListener('input', function(){
+  document.getElementById('ext-q-val').textContent = Math.round(this.value*100)+'%';
+});
+
+function loadExtractorVideo(file) {
+  const url = URL.createObjectURL(file);
+  extVideo = document.createElement('video');
+  extVideo.src = url; extVideo.preload = 'metadata'; extVideo.muted = true;
+  extVideo.addEventListener('loadedmetadata', ()=>{
+    const dur = extVideo.duration;
+    const row = document.getElementById('ext-info-row');
+    row.innerHTML = `
+      <span class="info-chip"><strong>${file.name}</strong></span>
+      <span class="info-chip">Duration: <strong>${formatTime(dur)}</strong></span>
+      <span class="info-chip">Size: <strong>${fmtSize(file.size)}</strong></span>
+    `;
+    document.getElementById('ext-info-card').style.display='block';
+    document.getElementById('ext-frames-card').style.display='none';
+    document.getElementById('frames-grid').innerHTML='';
+    extFrames=[];
+    hideStatus('ext-status');
+  });
+}
+
+async function startExtraction() {
+  if(!extVideo) return;
+  const mode = document.getElementById('ext-mode').value;
+  const fmt = document.getElementById('ext-format').value;
+  const quality = parseFloat(document.getElementById('ext-quality').value);
+  const dur = extVideo.duration;
+
+  let times = [];
+  if(mode==='every1') for(let t=0;t<=dur;t++) times.push(t);
+  else if(mode==='every2') for(let t=0;t<=dur;t+=2) times.push(t);
+  else if(mode==='every5') for(let t=0;t<=dur;t+=5) times.push(t);
+  else if(mode==='every10') for(let t=0;t<=dur;t+=10) times.push(t);
+  else if(mode==='fps1') for(let t=0;t<=dur;t++) times.push(t);
+
+  if(times.length>500){
+    showStatus('ext-status',`That would produce ${times.length} frames. Try a lower capture rate.`,'error');
+    return;
+  }
+
+  const btn = document.getElementById('ext-btn');
+  btn.disabled=true; btn.textContent='Extracting…';
+  extFrames=[]; document.getElementById('frames-grid').innerHTML='';
+  document.getElementById('ext-frames-card').style.display='none';
+
+  const pw = document.getElementById('ext-progress-wrap');
+  const pi = document.getElementById('ext-prog-inner');
+  const pl = document.getElementById('ext-prog-label');
+  pw.style.display='block'; pi.style.width='0%';
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const ext = fmt==='image/png'?'png':fmt==='image/jpeg'?'jpg':'webp';
+
+  for(let i=0;i<times.length;i++){
+    const t = times[i];
+    await seekTo(extVideo, t);
+    canvas.width = extVideo.videoWidth||1280;
+    canvas.height = extVideo.videoHeight||720;
+    ctx.drawImage(extVideo,0,0,canvas.width,canvas.height);
+    const dataUrl = canvas.toDataURL(fmt, quality);
+    const blob = await (await fetch(dataUrl)).blob();
+    extFrames.push({blob, dataUrl, name:`frame_${String(i+1).padStart(4,'0')}_${formatTime(t).replace(/:/g,'-')}.${ext}`, time:t});
+
+    pi.style.width = Math.round((i+1)/times.length*100)+'%';
+    pl.textContent = `Extracting frame ${i+1} of ${times.length} (${formatTime(t)})`;
+    renderThumb(extFrames[extFrames.length-1], i);
+    if(i%5===0) await new Promise(r=>setTimeout(r,0));
+  }
+
+  pw.style.display='none';
+  btn.disabled=false; btn.textContent='Extract frames';
+  document.getElementById('ext-count-badge').textContent = `${extFrames.length} frames extracted`;
+  document.getElementById('ext-frames-card').style.display='block';
+  showStatus('ext-status',`✓ ${extFrames.length} frames extracted successfully`,'success');
+}
+
+function seekTo(video, time) {
+  return new Promise(res=>{
+    video.currentTime=time;
+    const onSeeked=()=>{video.removeEventListener('seeked',onSeeked);res();};
+    video.addEventListener('seeked',onSeeked);
+  });
+}
+
+function renderThumb(frame, idx) {
+  const grid = document.getElementById('frames-grid');
+  const div = document.createElement('div');
+  div.className='frame-thumb'; div.title=frame.name;
+  div.innerHTML=`<img src="${frame.dataUrl}" loading="lazy"><div class="frame-label">${formatTime(frame.time)}</div>`;
+  div.onclick=()=>openModal(frame);
+  grid.appendChild(div);
+}
+
+function openModal(frame) {
+  currentModalFrame=frame;
+  document.getElementById('modal-title').textContent=frame.name;
+  document.getElementById('modal-img').src=frame.dataUrl;
+  document.getElementById('frame-modal').classList.add('open');
+}
+function closeModal(e) {
+  if(!e||e.target===document.getElementById('frame-modal'))
+    document.getElementById('frame-modal').classList.remove('open');
+}
+function downloadSingleFrame() {
+  if(!currentModalFrame) return;
+  saveAs(currentModalFrame.blob, currentModalFrame.name);
+}
+
+async function downloadZip() {
+  if(!extFrames.length) return;
+  const btn = document.getElementById('ext-dl-btn');
+  btn.disabled=true; btn.textContent='Creating ZIP…';
+  showStatus('ext-status','Zipping frames…','info');
+
+  const zip = new JSZip();
+  const folder = zip.folder('frames');
+  extFrames.forEach(f => folder.file(f.name, f.blob));
+  const blob = await zip.generateAsync({type:'blob', compression:'STORE'}, meta=>{
+    btn.textContent=`Zipping… ${Math.round(meta.percent)}%`;
+  });
+  saveAs(blob,'frames.zip');
+  btn.disabled=false; btn.textContent='Download all as ZIP';
+  showStatus('ext-status',`✓ ZIP downloaded (${fmtSize(blob.size)})`,'success');
+}
+
+// ---- VIDEO TRIMMER ----
+setupDrop('trim-drop','trim-file', loadTrimmerVideo);
+
+function loadTrimmerVideo(file) {
+  trimVideoFile=file;
+  const url = URL.createObjectURL(file);
+  const vid = document.getElementById('trim-video');
+  vid.src=url;
+  vid.addEventListener('loadedmetadata', ()=>{
+    trimDuration=vid.duration;
+    trimStartSec=0; trimEndSec=trimDuration;
+    document.getElementById('trim-info-card').style.display='block';
+    document.getElementById('trim-result-wrap').style.display='none';
+    hideStatus('trim-status');
+    updateTimeInputs();
+    updateRangeFill();
+    generateThumbStrip(vid);
+    document.getElementById('trim-dur-badge').textContent=`Duration: ${formatTime(trimDuration)}`;
+  },{once:true});
+}
+
+function generateThumbStrip(vid) {
+  const strip = document.getElementById('thumb-strip');
+  strip.innerHTML='';
+  const N=20;
+  const canvas = document.createElement('canvas');
+  canvas.width=80; canvas.height=45;
+  const ctx = canvas.getContext('2d');
+
+  async function drawThumbs(){
+    for(let i=0;i<N;i++){
+      const t=(i/(N-1))*trimDuration;
+      await seekTo(vid,t);
+      ctx.drawImage(vid,0,0,80,45);
+      const c=document.createElement('canvas');
+      c.width=80;c.height=45;
+      c.getContext('2d').drawImage(canvas,0,0);
+      c.style.flex='1';
+      strip.appendChild(c);
     }
-  </script>
+  }
+  drawThumbs();
+}
 
+function updateTimeInputs() {
+  document.getElementById('trim-start').value=formatTime(trimStartSec);
+  document.getElementById('trim-end').value=formatTime(trimEndSec);
+  document.getElementById('trim-dur-badge').textContent=`Selection: ${formatTime(trimEndSec-trimStartSec)} / Total: ${formatTime(trimDuration)}`;
+}
+
+function updateRangeFill() {
+  const fill=document.getElementById('range-fill');
+  const left=(trimStartSec/trimDuration)*100;
+  const right=(trimEndSec/trimDuration)*100;
+  fill.style.left=left+'%'; fill.style.width=(right-left)+'%';
+}
+
+function onTimeInput(which) {
+  const sVal=document.getElementById('trim-start').value;
+  const eVal=document.getElementById('trim-end').value;
+  let s=parseTime(sVal), e=parseTime(eVal);
+  s=Math.max(0,Math.min(s,trimDuration));
+  e=Math.max(0,Math.min(e,trimDuration));
+  if(which==='start'&&s>=e) s=Math.max(0,e-0.5);
+  if(which==='end'&&e<=s) e=Math.min(trimDuration,s+0.5);
+  trimStartSec=s; trimEndSec=e;
+  updateRangeFill();
+  document.getElementById('trim-dur-badge').textContent=`Selection: ${formatTime(trimEndSec-trimStartSec)} / Total: ${formatTime(trimDuration)}`;
+}
+
+function resetTrimRange() {
+  trimStartSec=0; trimEndSec=trimDuration;
+  updateTimeInputs(); updateRangeFill();
+}
+
+function previewTrim() {
+  const vid=document.getElementById('trim-video');
+  vid.currentTime=trimStartSec; vid.play();
+  const stopAt=trimEndSec;
+  const checker=setInterval(()=>{
+    if(vid.currentTime>=stopAt){vid.pause();clearInterval(checker);}
+  },100);
+}
+
+// Range drag on the bar
+(function(){
+  const track = document.getElementById('range-track');
+  if(!track) return;
+  let dragging=null;
+  track.addEventListener('mousedown', e=>{
+    const rect=track.getBoundingClientRect();
+    const pct=(e.clientX-rect.left)/rect.width;
+    const s=trimStartSec/trimDuration, en=trimEndSec/trimDuration;
+    if(Math.abs(pct-s)<0.04) dragging='start';
+    else if(Math.abs(pct-en)<0.04) dragging='end';
+    else if(pct>s&&pct<en) dragging='both';
+    e._startPct=pct; e._startS=trimStartSec; e._startE=trimEndSec;
+  });
+  document.addEventListener('mousemove', e=>{
+    if(!dragging) return;
+    const rect=track.getBoundingClientRect();
+    const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+    if(dragging==='start'){
+      trimStartSec=Math.min(pct*trimDuration,trimEndSec-0.5);
+    } else if(dragging==='end'){
+      trimEndSec=Math.max(pct*trimDuration,trimStartSec+0.5);
+    }
+    trimStartSec=Math.max(0,trimStartSec);
+    trimEndSec=Math.min(trimDuration,trimEndSec);
+    updateTimeInputs(); updateRangeFill();
+  });
+  document.addEventListener('mouseup',()=>dragging=null);
+
+  track.addEventListener('touchstart', e=>{
+    const t=e.touches[0]; const rect=track.getBoundingClientRect();
+    const pct=(t.clientX-rect.left)/rect.width;
+    const s=trimStartSec/trimDuration, en=trimEndSec/trimDuration;
+    if(Math.abs(pct-s)<0.05) dragging='start';
+    else if(Math.abs(pct-en)<0.05) dragging='end';
+    else if(pct>s&&pct<en) dragging='both';
+  });
+  document.addEventListener('touchmove', e=>{
+    if(!dragging) return;
+    const t=e.touches[0]; const rect=track.getBoundingClientRect();
+    const pct=Math.max(0,Math.min(1,(t.clientX-rect.left)/rect.width));
+    if(dragging==='start') trimStartSec=Math.min(pct*trimDuration,trimEndSec-0.5);
+    else if(dragging==='end') trimEndSec=Math.max(pct*trimDuration,trimStartSec+0.5);
+    trimStartSec=Math.max(0,trimStartSec);
+    trimEndSec=Math.min(trimDuration,trimEndSec);
+    updateTimeInputs(); updateRangeFill();
+  });
+  document.addEventListener('touchend',()=>dragging=null);
+})();
+
+async function startTrim() {
+  if(!trimVideoFile) return;
+  const dur=trimEndSec-trimStartSec;
+  if(dur<0.1){showStatus('trim-status','Select a longer range to trim.','error');return;}
+
+  const btn=document.getElementById('trim-btn');
+  btn.disabled=true; btn.textContent='Trimming…';
+  showStatus('trim-status','Trimming video using frame-by-frame re-encoding…','info');
+  document.getElementById('trim-result-wrap').style.display='none';
+
+  const pw=document.getElementById('trim-progress-wrap');
+  const pi=document.getElementById('trim-prog-inner');
+  const pl=document.getElementById('trim-prog-label');
+  pw.style.display='block'; pi.style.width='0%';
+
+  try {
+    const srcVid=document.createElement('video');
+    srcVid.src=URL.createObjectURL(trimVideoFile);
+    srcVid.muted=true; srcVid.preload='metadata';
+    await new Promise(r=>{srcVid.onloadedmetadata=r;});
+
+    const FPS=30;
+    const totalFrames=Math.ceil(dur*FPS);
+    const canvas=document.createElement('canvas');
+    canvas.width=srcVid.videoWidth||1280;
+    canvas.height=srcVid.videoHeight||720;
+    const ctx=canvas.getContext('2d');
+
+    const stream=canvas.captureStream(FPS);
+
+    let mimeType='video/webm;codecs=vp9';
+    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType='video/webm;codecs=vp8';
+    if(!MediaRecorder.isTypeSupported(mimeType)) mimeType='video/webm';
+
+    const recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:8000000});
+    const chunks=[];
+    recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
+
+    const recordingDone=new Promise(res=>recorder.onstop=res);
+    recorder.start(100);
+
+    for(let i=0;i<totalFrames;i++){
+      const t=trimStartSec+(i/FPS);
+      if(t>trimEndSec) break;
+      await seekTo(srcVid,t);
+      ctx.drawImage(srcVid,0,0,canvas.width,canvas.height);
+      const pct=Math.round((i+1)/totalFrames*100);
+      pi.style.width=pct+'%';
+      pl.textContent=`Processing frame ${i+1}/${totalFrames} (${formatTime(t-trimStartSec)} / ${formatTime(dur)})`;
+      await new Promise(r=>setTimeout(r,1000/FPS));
+    }
+    recorder.stop();
+    await recordingDone;
+
+    trimmedBlob=new Blob(chunks,{type:mimeType});
+    const blobUrl=URL.createObjectURL(trimmedBlob);
+
+    document.getElementById('trim-result-video').src=blobUrl;
+    document.getElementById('trim-result-wrap').style.display='block';
+    document.getElementById('trim-size-badge').textContent=`File size: ${fmtSize(trimmedBlob.size)}`;
+    showStatus('trim-status',`✓ Trimmed: ${formatTime(dur)} segment · ${fmtSize(trimmedBlob.size)}`,'success');
+  } catch(err) {
+    showStatus('trim-status','Error: '+err.message,'error');
+  }
+
+  pw.style.display='none';
+  btn.disabled=false; btn.textContent='Trim video';
+}
+
+function downloadTrimmed() {
+  if(!trimmedBlob) return;
+  const ext=trimmedBlob.type.includes('mp4')?'mp4':'webm';
+  const orig=trimVideoFile?trimVideoFile.name.replace(/\.[^.]+$/,''):'video';
+  saveAs(trimmedBlob,`${orig}_trimmed_${formatTime(trimStartSec).replace(/:/g,'-')}-${formatTime(trimEndSec).replace(/:/g,'-')}.${ext}`);
+}
+</script>
 </body>
 </html>
